@@ -25,7 +25,7 @@
     <canvas id="canvas" width="800" height="700" style="margin:0px;float:left" onselectstart="return false;"></canvas>
     <table id="tbl">
         <tr><td>
-            <button onclick="javascript:restart()" style="padding:10px;">restart</button>
+            <button onclick="javascript:if(confirm('Are you sure?'))restart()" style="padding:10px;">restart</button>
         </td></tr>
         <tr><td>
             stack <span id="tilesLeft"></span><br/>

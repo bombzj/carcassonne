@@ -1,7 +1,11 @@
 
 let ctx, grid = 80, images = {}, cars, curTile, touchable = false, board=[], curMove, editMode = false, solving = false, curRotate = 0
-let offsetX = 0, offsetY = 0
+let boardWidth = 50
+let offsetX, offsetY
 let touchX, touchY, tileStack, tiles
+let players
+let curPlayer
+let curTile4Token
 
 function init(c, boardW, boardH, exitX, exitY) {
 	ctx = canvas.getContext("2d")
@@ -9,6 +13,9 @@ function init(c, boardW, boardH, exitX, exitY) {
 	for(let [index, item] of tileTypes.entries()) {
 		files.push(index)
 		item.id = index
+	}
+	for(let c of allColors) {
+		files.push(c)
 	}
 	loadImages(files, () => {
 		drawAll()
@@ -79,8 +86,23 @@ function restart() {
 	tilesLeft.innerHTML = tileStack.length
 
 	tiles = [
-		[6, 4, 14, 0],
+		[boardWidth / 2 + 3, boardWidth / 2, 14, 0],
+		// [boardWidth / 2 + 2, boardWidth / 2, 0, 0, [0, 0, 0]],
 	]
+	offsetX = -grid * (boardWidth / 2 - 2)
+	offsetY = -grid * (boardWidth / 2 - 3)
+
+	players = [
+		{
+			color: allColors[0],
+			token: 7,
+		},
+		{
+			color: allColors[1],
+			token: 7,
+		},
+	]	// blue & red
+	curPlayer = 0
 
 	drawAll()
 }
@@ -125,8 +147,77 @@ function drawAll(c) {
 	ctx.clearRect(0,0,canvas.width,canvas.height); 
 	for(let tile of tiles) {
 		draw(tile[2], grid * tile[0] + offsetX, grid * tile[1] + offsetY, grid, grid, tile[3])
+		if(tile[4]) {
+			let place = tileTypes[tile[2]].place
+			for(let [index, token] of tile[4].entries()) {
+				let tokenPlace = rotate(place[index], tile[3])
+				if(players[token]) {
+					draw(players[token].color, 
+						grid * (tile[0] + tokenPlace[0]) + offsetX - grid/8, 
+						grid * (tile[1] + tokenPlace[1]) + offsetY - grid/8, 
+						grid/4, grid/4)
+				}
+			}
+		}
 	}
 	drawBackup()
+}
+
+function rotate(arr, r) {
+	if(r == 0) {
+		return arr
+	} else if(r == 1) {
+		return [1 - arr[1], arr[0]]
+	} else if(r == 2) {
+		return [1 - arr[0], 1 - arr[1]]
+	} else if(r == 3) {
+		return [arr[1], 1 - arr[0]]
+	}
+}
+
+
+const zoomTile = 2;
+function drawTokenPlace(tile, ex, ey) {
+	let x = grid * tile[0] + offsetX
+	let y = grid * tile[1] + offsetY
+	draw(tile[2], x, y, grid * zoomTile, grid * zoomTile, tile[3])
+	if(tileTypes[tile[2]].place) {
+		for(let place of tileTypes[tile[2]].place) {
+			let placeR = rotate(place, tile[3])
+			let px = x + grid * placeR[0] * zoomTile
+			let py = y + grid * placeR[1] * zoomTile
+			if(Math.abs(ex - px) < grid / 4 &&
+					Math.abs(ey - py) < grid / 4) {
+				
+			} else {
+				ctx.globalAlpha = 0.5
+			}
+			draw(players[curPlayer].color, 
+				px - grid / 4, 
+				py - grid / 4,
+				grid / 2, grid / 2)
+			ctx.globalAlpha = 1
+		}
+	}
+}
+
+function placeToken(tile, ex, ey) {
+	let x = grid * tile[0] + offsetX
+	let y = grid * tile[1] + offsetY
+	if(tileTypes[tile[2]].place) {
+		for(let [index, place] of tileTypes[tile[2]].place.entries()) {
+			let placeR = rotate(place, tile[3])
+			let px = x + grid * placeR[0] * zoomTile
+			let py = y + grid * placeR[1] * zoomTile
+			if(Math.abs(ex - px) < grid / 4 &&
+					Math.abs(ey - py) < grid / 4) {
+				if(!tile[4]) {
+					tile[4] = [];
+				}
+				tile[4][index] = curPlayer
+			}
+		}
+	}
 }
 
 function drawBackup() {
@@ -166,14 +257,22 @@ function draw(file, x, y, w = grid, h = grid, rotate = 0) {
 
 let dragX = null, dragY
 function touchstart(ex, ey) {
+	let x = ex / grid
+	let y = ey / grid
+	
+	if(curTile4Token) {	// place token or cancel
+		placeToken(curTile4Token, ex, ey)
+		curTile4Token = undefined
+		drawAll()
+		return
+	}
+
 	if(editMode) {
-		let x = ex / grid
-		let y = ey / grid
 		for(let [index, tileType] of tileTypes.entries()) {
 			if(x >= tileType.position[0] && x < tileType.position[2] + tileType.position[0] &&
 				y >= tileType.position[1] && y < tileType.position[3] + tileType.position[1]) {
 				curTile = [-1, -1, index, curRotate]
-				return;
+				return
 			}
 		}
 	} else if(tileStack.length > 0){
@@ -182,6 +281,18 @@ function touchstart(ex, ey) {
 			return;
 		}
 	}
+
+	let ox = x - offsetX / grid
+	let oy = y - offsetY / grid
+	for(let tile of tiles) {
+		if(ox >= tile[0] && ox < tile[0] + 1 &&
+			oy >= tile[1] && oy < tile[1] + 1) {
+			curTile4Token = tile
+			drawTokenPlace(tile)
+			return
+		}
+	}
+
 	if(ex < 650 && ey < 650) {
 		dragX = ex - offsetX
 		dragY = ey - offsetY
@@ -195,11 +306,14 @@ function touchmove(ex, ey) {
 		drawAll()
 		return
 	}
+	if(curTile4Token) {
+		drawTokenPlace(curTile4Token, ex, ey)
+	}
 	let x = Math.floor((ex - offsetX) / grid)
 	let y = Math.floor((ey - offsetY) / grid)
 	if(true) {
 		if(curTile) {
-			if(x >= -10 && x <= 20 && y >= -10 && y <= 20) {
+			if(x >= 0 && x <= boardWidth && y >= 0 && y <= boardWidth) {
 				let board = updateBoardBase();
 				let vacant = board[x][y] == undefined
 				let connected = false;
@@ -290,7 +404,7 @@ function rotateBackup() {
 
 function updateBoardBase() {
 	let board = []
-	for(let i = -10;i < 20;i++) {
+	for(let i = 0;i < boardWidth;i++) {
 		board[i] = []
 	}
 	for(let tile of tiles) {
