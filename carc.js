@@ -35,7 +35,7 @@ function init(c, boardW, boardH, exitX, exitY) {
 	}, false);
 	window.addEventListener("mouseup", function (event) {
 		if(!touchable) {
-			touchend()
+			touchend(event.offsetX, event.offsetY)
 		}
 	}, false);
 	
@@ -51,7 +51,8 @@ function init(c, boardW, boardH, exitX, exitY) {
 		touchmove(event.touches[0].clientX - bcr.x, event.touches[0].clientY - bcr.y)
 	}, false);
 	window.addEventListener("touchend", function (event) {
-		touchend()
+		var bcr = event.target.getBoundingClientRect();
+		touchend(event.touches[0].clientX - bcr.x, event.touches[0].clientY - bcr.y)
 	}, false);
 }
 
@@ -400,7 +401,12 @@ function touchmove(ex, ey) {
 	}
 }
 
-function touchend() {
+function touchend(ex, ey) {
+	if(tileStack.length > 0 && !lastTile && !editMode){
+		if(ex > 8 * grid && ey < grid) {
+			rotateBackup()
+		}
+	}
 	if(curTile) {
 		if(curTile[0] != -1) {
 			tiles.push(curTile)

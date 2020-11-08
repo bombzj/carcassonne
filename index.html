@@ -25,19 +25,19 @@
     <canvas id="canvas" width="800" height="700" style="margin:0px;float:left" onselectstart="return false;"></canvas>
     <table id="tbl">
         <tr><td>
-            <button onclick="javascript:if(confirm('Are you sure?'))restart()" style="padding:10px;">restart</button>
+            <button id="btnNext" onclick="javascript:next()" style="padding:10px;" disabled="true">next</button><br/>
         </td></tr>
         <tr><td>
             stack <span id="tilesLeft"></span><br/>
+        </td></tr>
+        <tr><td>
+            <button onclick="javascript:if(confirm('Are you sure?'))restart()" style="padding:10px;">restart</button>
         </td></tr>
         <tr><td>
             <button onclick="javascript:edit()" style="padding:10px;">edit</button><br/>
         </td></tr>
         <tr><td>
             <button onclick="javascript:rotateBackup()" style="padding:10px;">rotate</button><br/>
-        </td></tr>
-        <tr><td>
-            <button id="btnNext" onclick="javascript:next()" style="padding:10px;" disabled="true">next</button><br/>
         </td></tr>
     </table>
 </body>
