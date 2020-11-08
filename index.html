@@ -5,8 +5,8 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="Parking,Game"/>
 <title>Carcassonne</title>
-<script src="data.js?i=4"></script>
-<script src="carc.js?i=5"></script>
+<script src="data.js?i=5"></script>
+<script src="carc.js?i=6"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
 <style>
     body, button, span {
@@ -35,6 +35,9 @@
         </td></tr>
         <tr><td>
             <button onclick="javascript:rotateBackup()" style="padding:10px;">rotate</button><br/>
+        </td></tr>
+        <tr><td>
+            <button id="btnNext" onclick="javascript:next()" style="padding:10px;" disabled="true">next</button><br/>
         </td></tr>
     </table>
 </body>

@@ -6,6 +6,7 @@ let touchX, touchY, tileStack, tiles
 let players
 let curPlayer
 let curTile4Token
+let lastTile	// token can place here only
 
 function init(c, boardW, boardH, exitX, exitY) {
 	ctx = canvas.getContext("2d")
@@ -56,6 +57,7 @@ function init(c, boardW, boardH, exitX, exitY) {
 
 function restart() {
 	editMode = false
+	lastTile = undefined
 	tileStack = []
 	let start, end
 	let rivers = []
@@ -122,6 +124,15 @@ function shuffle(arr) {
 		let s = arr[a]
 		arr[a] = arr[b]
 		arr[b] = s
+	}
+}
+
+function next() {
+	if(lastTile) {
+		lastTile = undefined
+		curPlayer = (curPlayer + 1) % players.length
+		btnNext.disabled = true
+		drawAll()
 	}
 }
 
@@ -236,7 +247,10 @@ function drawBackup() {
 		}
 	} else {
 		if(tileStack.length > 0) {
-			draw(tileStack[0], grid * startX, grid * startY, grid*0.8, grid*0.8, curRotate)
+			if(!lastTile) {
+				draw(tileStack[0], grid * startX, grid * startY, grid*0.8, grid*0.8, curRotate)
+			}
+			draw(players[curPlayer].color, grid * startX, grid * (startY + 1), grid*0.5, grid*0.5)
 		}
 	}
 }
@@ -263,6 +277,9 @@ function touchstart(ex, ey) {
 	if(curTile4Token) {	// place token or cancel
 		placeToken(curTile4Token, ex, ey)
 		curTile4Token = undefined
+		if(!editMode) {
+			next()
+		}
 		drawAll()
 		return
 	}
@@ -275,18 +292,24 @@ function touchstart(ex, ey) {
 				return
 			}
 		}
-	} else if(tileStack.length > 0){
+	} else if(tileStack.length > 0 && !lastTile){
 		if(ex > 8 * grid && ey < grid) {
 			curTile = [-1, -1, tileStack[0], curRotate]
 			return;
 		}
 	}
-
+	
 	let ox = x - offsetX / grid
 	let oy = y - offsetY / grid
 	for(let tile of tiles) {
 		if(ox >= tile[0] && ox < tile[0] + 1 &&
 			oy >= tile[1] && oy < tile[1] + 1) {
+
+			if(!editMode) {
+				if(!lastTile || lastTile != tile) {
+					break
+				}
+			}
 			curTile4Token = tile
 			drawTokenPlace(tile)
 			return
@@ -384,6 +407,8 @@ function touchend() {
 			if(!editMode) {
 				tileStack.shift()
 				tilesLeft.innerHTML = tileStack.length
+				lastTile = curTile
+				btnNext.disabled = false
 			}
 		}
 		curTile = undefined

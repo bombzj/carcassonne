@@ -166,6 +166,15 @@ const tileTypes = [
 	{	// (17)			
 		count:	4,
 		connect : [road, road, city, road],
+		place: [
+			[0.15, 0.15, farm],
+			[0.85, 0.15, farm],
+			[0.5, 0.53, farm],
+			[0.5, 0.15, road],
+			[0.2, 0.4, road],
+			[0.8, 0.43, road],
+			[0.5, 0.85, city],
+		]
 	},
 	{	// (18)			
 		count:	4,
