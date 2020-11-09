@@ -214,6 +214,10 @@ function drawTokenPlace(tile, ex, ey) {
 }
 
 function placeToken(tile, ex, ey) {
+	let player = players[curPlayer]
+	if(!editMode && player.token == 0) {
+		return
+	}
 	let x = grid * tile[0] + offsetX
 	let y = grid * tile[1] + offsetY
 	if(tileTypes[tile[2]].place) {
@@ -227,9 +231,21 @@ function placeToken(tile, ex, ey) {
 					tile[4] = [];
 				}
 				tile[4][index] = curPlayer
+				
+				if(!editMode) {
+					player.token--
+					checkToken()
+					next()
+				}
+				return
 			}
 		}
 	}
+}
+
+// check completion for token
+function checkToken() {
+
 }
 
 function drawBackup() {
@@ -251,7 +267,18 @@ function drawBackup() {
 			if(!lastTile) {
 				draw(tileStack[0], grid * startX, grid * startY, grid*0.8, grid*0.8, curRotate)
 			}
-			draw(players[curPlayer].color, grid * startX, grid * (startY + 1), grid*0.5, grid*0.5)
+			let player = players[curPlayer]
+
+			startX = 8.0
+			startY = 1.1
+			for(let i = 0;i < player.token;i++) {
+				draw(player.color, grid * startX, grid * startY, grid/4, grid/4)
+				startX += 0.3
+				if(i == 3) {
+					startX = 8.0
+					startY += 0.3
+				}
+			}
 		}
 	}
 }
@@ -278,9 +305,6 @@ function touchstart(ex, ey) {
 	if(curTile4Token) {	// place token or cancel
 		placeToken(curTile4Token, ex, ey)
 		curTile4Token = undefined
-		if(!editMode) {
-			next()
-		}
 		drawAll()
 		return
 	}
@@ -415,6 +439,7 @@ function touchend(ex, ey) {
 				tilesLeft.innerHTML = tileStack.length
 				lastTile = curTile
 				btnNext.disabled = false
+				checkToken()
 			}
 		}
 		curTile = undefined
