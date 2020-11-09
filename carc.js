@@ -245,7 +245,18 @@ function placeToken(tile, ex, ey) {
 
 // check completion for token
 function checkToken() {
-
+	for(let tile of tiles) {
+		if(tile[4]) {
+			let places = tileTypes[tile[2]].place;
+			for(let [index, place] of places.entries()) {
+				if(tiles[4][index]) {
+					if(place[2] == cloister) {
+						
+					}
+				}
+			}
+		}
+	}
 }
 
 function drawBackup() {
