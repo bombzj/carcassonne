@@ -13,9 +13,9 @@ const tileTypes = [
 		count:	4,
 		connect : [farm, road, farm, road],	// top left bottom right
 		place: [
-			[0.5, 0.25, farm],
-			[0.5, 0.75, farm],
-			[0.5, 0.5, road],
+			[0.5, 0.25, farm, []],
+			[0.5, 0.75, farm, []],
+			[0.5, 0.5, road, [1, 3]],
 		]
 	},
 	{	// (1)	lake		

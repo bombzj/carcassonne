@@ -9,6 +9,7 @@ let curTile4Token
 let lastTile	// token can place here only
 
 function init(c, boardW, boardH, exitX, exitY) {
+	scores.initTileType()
 	ctx = canvas.getContext("2d")
 	let files = []
 	for(let [index, item] of tileTypes.entries()) {
@@ -58,6 +59,7 @@ function init(c, boardW, boardH, exitX, exitY) {
 
 function restart() {
 	editMode = false
+	scores.initScore()
 	lastTile = undefined
 	tileStack = []
 	let start, end
@@ -245,18 +247,18 @@ function placeToken(tile, ex, ey) {
 
 // check completion for token
 function checkToken() {
-	for(let tile of tiles) {
-		if(tile[4]) {
-			let places = tileTypes[tile[2]].place;
-			for(let [index, place] of places.entries()) {
-				if(tiles[4][index]) {
-					if(place[2] == cloister) {
+	// for(let tile of tiles) {
+	// 	if(tile[4]) {
+	// 		let places = tileTypes[tile[2]].place;
+	// 		for(let [index, place] of places.entries()) {
+	// 			if(tiles[4][index]) {
+	// 				if(place[2] == cloister) {
 						
-					}
-				}
-			}
-		}
-	}
+	// 				}
+	// 			}
+	// 		}
+	// 	}
+	// }
 }
 
 function drawBackup() {
@@ -373,9 +375,9 @@ function touchmove(ex, ey) {
 	if(true) {
 		if(curTile) {
 			if(x >= 0 && x <= boardWidth && y >= 0 && y <= boardWidth) {
-				let board = updateBoardBase();
+				let board = updateBoardBase()
 				let vacant = board[x][y] == undefined
-				let connected = false;
+				let connected = false
 				let connect = tileTypes[curTile[2]].connect
 				let isRiver = tileTypes[curTile[2]].isRiver	// river must connect to river
 				if(vacant) {
@@ -450,6 +452,7 @@ function touchend(ex, ey) {
 				tilesLeft.innerHTML = tileStack.length
 				lastTile = curTile
 				btnNext.disabled = false
+				scores.addTile(curTile)
 				checkToken()
 			}
 		}
