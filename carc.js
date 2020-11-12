@@ -7,9 +7,10 @@ let players
 let curPlayer
 let curTile4Token
 let lastTile	// token can place here only
+let tokens
 
 function init(c, boardW, boardH, exitX, exitY) {
-	// scores.initTileType()
+	scores.initTileType()
 	ctx = canvas.getContext("2d")
 	let files = []
 	for(let [index, item] of tileTypes.entries()) {
@@ -62,6 +63,7 @@ function restart() {
 	scores.initScore()
 	lastTile = undefined
 	tileStack = []
+	tokens = []
 	let start, end
 	let rivers = []
 	let others = []
@@ -86,14 +88,18 @@ function restart() {
 	}
 	shuffle(rivers)
 	shuffle(others)
-	tileStack = rivers.concat(end, others)
+	tileStack = others//rivers.concat(end, others)
 	
 	tilesLeft.innerHTML = tileStack.length
+	let initTile = {
+		x : boardWidth / 2 + 3,
+		y : boardWidth / 2,
+		type : tileTypes[14], 
+		rotate : 0
+	}
+	tiles = [ initTile ]
+	scores.addTile(initTile)
 
-	tiles = [
-		[boardWidth / 2 + 3, boardWidth / 2, 14, 0],
-		// [boardWidth / 2 + 2, boardWidth / 2, 0, 0, [0, 0, 0]],
-	]
 	offsetX = -grid * (boardWidth / 2 - 2)
 	offsetY = -grid * (boardWidth / 2 - 3)
 
@@ -101,14 +107,18 @@ function restart() {
 		{
 			color: allColors[0],
 			token: 7,
+			score: 0,
 		},
 		{
 			color: allColors[1],
 			token: 7,
+			score: 0,
 		},
 	]	// blue & red
 	curPlayer = 0
 
+	document.getElementById("score0").innerHTML = players[0].score
+	document.getElementById("score1").innerHTML = players[1].score
 	drawAll()
 }
 
@@ -160,15 +170,15 @@ function empty() {
 function drawAll(c) {
 	ctx.clearRect(0,0,canvas.width,canvas.height); 
 	for(let tile of tiles) {
-		draw(tile[2], grid * tile[0] + offsetX, grid * tile[1] + offsetY, grid, grid, tile[3])
-		if(tile[4]) {
-			let place = tileTypes[tile[2]].place
-			for(let [index, token] of tile[4].entries()) {
-				let tokenPlace = rotate(place[index], tile[3])
+		draw(tile.type.id, grid * tile.x + offsetX, grid * tile.y + offsetY, grid, grid, tile.rotate)
+		if(tile.tokens) {
+			let place = tile.type.place
+			for(let [index, token] of tile.tokens.entries()) {
+				let tokenPlace = rotate(place[index], tile.rotate)
 				if(players[token]) {
 					draw(players[token].color, 
-						grid * (tile[0] + tokenPlace[0]) + offsetX - grid/8, 
-						grid * (tile[1] + tokenPlace[1]) + offsetY - grid/8, 
+						grid * (tile.x + tokenPlace[0]) + offsetX - grid/8, 
+						grid * (tile.y + tokenPlace[1]) + offsetY - grid/8, 
 						grid/4, grid/4)
 				}
 			}
@@ -192,12 +202,12 @@ function rotate(arr, r) {
 
 const zoomTile = 2;
 function drawTokenPlace(tile, ex, ey) {
-	let x = grid * tile[0] + offsetX
-	let y = grid * tile[1] + offsetY
-	draw(tile[2], x, y, grid * zoomTile, grid * zoomTile, tile[3])
-	if(tileTypes[tile[2]].place) {
-		for(let place of tileTypes[tile[2]].place) {
-			let placeR = rotate(place, tile[3])
+	let x = grid * tile.x + offsetX
+	let y = grid * tile.y + offsetY
+	draw(tile.type.id, x, y, grid * zoomTile, grid * zoomTile, tile.rotate)
+	if(tile.type.place) {
+		for(let place of tile.type.place) {
+			let placeR = rotate(place, tile.rotate)
 			let px = x + grid * placeR[0] * zoomTile
 			let py = y + grid * placeR[1] * zoomTile
 			if(Math.abs(ex - px) < grid / 4 &&
@@ -220,23 +230,31 @@ function placeToken(tile, ex, ey) {
 	if(!editMode && player.token == 0) {
 		return
 	}
-	let x = grid * tile[0] + offsetX
-	let y = grid * tile[1] + offsetY
-	if(tileTypes[tile[2]].place) {
-		for(let [index, place] of tileTypes[tile[2]].place.entries()) {
-			let placeR = rotate(place, tile[3])
+	let x = grid * tile.x + offsetX
+	let y = grid * tile.y + offsetY
+	if(tile.type.place) {
+		for(let [index, place] of tile.type.place.entries()) {
+			let placeR = rotate(place, tile.rotate)
 			let px = x + grid * placeR[0] * zoomTile
 			let py = y + grid * placeR[1] * zoomTile
 			if(Math.abs(ex - px) < grid / 4 &&
 					Math.abs(ey - py) < grid / 4) {
-				if(!tile[4]) {
-					tile[4] = [];
+
+				let group = tile.groups[index][0]
+				if(group.hasToken) {
+					return
 				}
-				tile[4][index] = curPlayer
-				
+				group.hasToken = true
+				if(!tile.tokens) {
+					tile.tokens = [];
+				}
+				tile.tokens[index] = curPlayer
+				tokens.push({tile : tile, index : index, player : player, type : place[2]})
 				if(!editMode) {
 					player.token--
 					checkToken()
+					document.getElementById("score0").innerHTML = players[0].score
+					document.getElementById("score1").innerHTML = players[1].score
 					next()
 				}
 				return
@@ -247,18 +265,32 @@ function placeToken(tile, ex, ey) {
 
 // check completion for token
 function checkToken() {
-	// for(let tile of tiles) {
-	// 	if(tile[4]) {
-	// 		let places = tileTypes[tile[2]].place;
-	// 		for(let [index, place] of places.entries()) {
-	// 			if(tiles[4][index]) {
-	// 				if(place[2] == cloister) {
-						
-	// 				}
-	// 			}
-	// 		}
-	// 	}
-	// }
+	tokens = tokens.filter(token => {
+		let finished = token.tile.unfinished[token.index] == 0
+		if(finished) {
+			let members = token.tile.groups[token.index][0].members
+			let number = members.length
+			token.player.token++
+			token.tile.tokens[token.index] = undefined
+			if(token.type == road) {
+				token.player.score += number
+			} else if(token.type == city) {
+				if(number == 2) {
+					token.player.score += number
+				} else {
+					token.player.score += number * 2
+					for(let m of members) {
+						if(m[0].type.star) {
+							token.player.score += 2
+						}
+					}
+				}
+			} else if(token.type == cloister) {
+				token.player.score += 8
+			}
+		}
+		return !finished
+	})
 }
 
 function drawBackup() {
@@ -326,13 +358,13 @@ function touchstart(ex, ey) {
 		for(let [index, tileType] of tileTypes.entries()) {
 			if(x >= tileType.position[0] && x < tileType.position[2] + tileType.position[0] &&
 				y >= tileType.position[1] && y < tileType.position[3] + tileType.position[1]) {
-				curTile = [-1, -1, index, curRotate]
+				curTile = {x : -1, y : -1, type : tileTypes[index], rotate : curRotate}
 				return
 			}
 		}
 	} else if(tileStack.length > 0 && !lastTile){
 		if(ex > 8 * grid && ey < grid) {
-			curTile = [-1, -1, tileStack[0], curRotate]
+			curTile = {x : -1, y : -1, type : tileTypes[tileStack[0]], rotate : curRotate}
 			return;
 		}
 	}
@@ -340,8 +372,8 @@ function touchstart(ex, ey) {
 	let ox = x - offsetX / grid
 	let oy = y - offsetY / grid
 	for(let tile of tiles) {
-		if(ox >= tile[0] && ox < tile[0] + 1 &&
-			oy >= tile[1] && oy < tile[1] + 1) {
+		if(ox >= tile.x && ox < tile.x + 1 &&
+			oy >= tile.y && oy < tile.y + 1) {
 
 			if(!editMode) {
 				if(!lastTile || lastTile != tile) {
@@ -378,13 +410,13 @@ function touchmove(ex, ey) {
 				let board = updateBoardBase()
 				let vacant = board[x][y] == undefined
 				let connected = false
-				let connect = tileTypes[curTile[2]].connect
-				let isRiver = tileTypes[curTile[2]].isRiver	// river must connect to river
+				let connect = curTile.type.connect
+				let isRiver = curTile.type.isRiver	// river must connect to river
 				if(vacant) {
 					let tile = board[x-1][y];
 					if(tile) {
-						vacant = connect[1 + curTile[3] & 3] == tileTypes[tile[2]].connect[3 + tile[3] & 3]
-						if(vacant && (!isRiver || isRiver && connect[1 + curTile[3] & 3] == river)) {
+						vacant = connect[1 + curTile.rotate & 3] == tile.type.connect[3 + tile.rotate & 3]
+						if(vacant && (!isRiver || isRiver && connect[1 + curTile.rotate & 3] == river)) {
 							connected = true;
 						}
 					}
@@ -392,8 +424,8 @@ function touchmove(ex, ey) {
 				if(vacant) {
 					let tile = board[x+1][y];
 					if(tile) {
-						vacant = connect[3 + curTile[3] & 3] == tileTypes[tile[2]].connect[1 + tile[3] & 3]
-						if(vacant && (!isRiver || isRiver && connect[3 + curTile[3] & 3] == river)) {
+						vacant = connect[3 + curTile.rotate & 3] == tile.type.connect[1 + tile.rotate & 3]
+						if(vacant && (!isRiver || isRiver && connect[3 + curTile.rotate & 3] == river)) {
 							connected = true;
 						}
 					}
@@ -401,8 +433,8 @@ function touchmove(ex, ey) {
 				if(vacant) {
 					let tile = board[x][y-1];
 					if(tile) {
-						vacant = connect[0 + curTile[3] & 3] == tileTypes[tile[2]].connect[2 + tile[3] & 3]
-						if(vacant && (!isRiver || isRiver && connect[ + curTile[3] & 3] == river)) {
+						vacant = connect[0 + curTile.rotate & 3] == tile.type.connect[2 + tile.rotate & 3]
+						if(vacant && (!isRiver || isRiver && connect[ + curTile.rotate & 3] == river)) {
 							connected = true;
 						}
 					}
@@ -410,28 +442,28 @@ function touchmove(ex, ey) {
 				if(vacant) {
 					let tile = board[x][y+1];
 					if(tile) {
-						vacant = connect[2 + curTile[3] & 3] == tileTypes[tile[2]].connect[0 + tile[3] & 3]
-						if(vacant && (!isRiver || isRiver && connect[2 + curTile[3] & 3] == river)) {
+						vacant = connect[2 + curTile.rotate & 3] == tile.type.connect[0 + tile.rotate & 3]
+						if(vacant && (!isRiver || isRiver && connect[2 + curTile.rotate & 3] == river)) {
 							connected = true;
 						}
 					}
 				}
 				if(vacant && connected) {
-					curTile[0] = x
-					curTile[1] = y
+					curTile.x = x
+					curTile.y = y
 				} else {
-					curTile[0] = -1
+					curTile.x = -1
 				}
 			} else {
-				curTile[0] = -1
+				curTile.x = -1
 			}
-			if(curTile[0] == -1) {
+			if(curTile.x == -1) {
 				ctx.clearRect(0,0,canvas.width,canvas.height); 
 				drawAll()
-				draw(curTile[2], ex-grid/4, ey-grid/4, grid/2, grid/2, curRotate)
+				draw(curTile.type.id, ex-grid/4, ey-grid/4, grid/2, grid/2, curRotate)
 			} else {
 				drawAll();
-				draw(curTile[2], grid * curTile[0]+offsetX, grid * curTile[1]+offsetY, grid, grid, curRotate)
+				draw(curTile.type.id, grid * curTile.x+offsetX, grid * curTile.y+offsetY, grid, grid, curRotate)
 				drawBackup()
 			}
 		}
@@ -445,15 +477,17 @@ function touchend(ex, ey) {
 		}
 	}
 	if(curTile) {
-		if(curTile[0] != -1) {
+		if(curTile.x != -1) {
 			tiles.push(curTile)
+			scores.addTile(curTile)
 			if(!editMode) {
 				tileStack.shift()
 				tilesLeft.innerHTML = tileStack.length
 				lastTile = curTile
 				btnNext.disabled = false
-				scores.addTile(curTile)
 				checkToken()
+				document.getElementById("score0").innerHTML = players[0].score
+				document.getElementById("score1").innerHTML = players[1].score
 			}
 		}
 		curTile = undefined
@@ -478,7 +512,7 @@ function updateBoardBase() {
 		board[i] = []
 	}
 	for(let tile of tiles) {
-		board[tile[0]][tile[1]] = tile
+		board[tile.x][tile.y] = tile
 	}
 	return board;
 }
