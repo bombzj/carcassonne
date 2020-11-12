@@ -9,7 +9,7 @@ let curTile4Token
 let lastTile	// token can place here only
 
 function init(c, boardW, boardH, exitX, exitY) {
-	scores.initTileType()
+	// scores.initTileType()
 	ctx = canvas.getContext("2d")
 	let files = []
 	for(let [index, item] of tileTypes.entries()) {
@@ -53,7 +53,7 @@ function init(c, boardW, boardH, exitX, exitY) {
 	}, false);
 	window.addEventListener("touchend", function (event) {
 		var bcr = event.target.getBoundingClientRect();
-		touchend(event.touches[0].clientX - bcr.x, event.touches[0].clientY - bcr.y)
+		touchend(event.changedTouches[0].clientX - bcr.x, event.changedTouches[0].clientY - bcr.y)
 	}, false);
 }
 
