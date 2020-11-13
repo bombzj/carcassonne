@@ -105,20 +105,26 @@ function restart() {
 
 	players = [
 		{
+			id : 0,
 			color: allColors[0],
-			token: 7,
+			token: 1,
 			score: 0,
+			score2: 0
 		},
 		{
+			id : 1,
 			color: allColors[1],
-			token: 7,
+			token: 1,
 			score: 0,
+			score2: 0
 		},
 	]	// blue & red
 	curPlayer = 0
 
 	document.getElementById("score0").innerHTML = players[0].score
 	document.getElementById("score1").innerHTML = players[1].score
+	document.getElementById("scorep0").innerHTML = ""
+	document.getElementById("scorep1").innerHTML = ""
 	drawAll()
 }
 
@@ -142,6 +148,9 @@ function shuffle(arr) {
 
 function next() {
 	if(lastTile) {
+		scores.checkToken()
+		document.getElementById("score0").innerHTML = players[0].score
+		document.getElementById("score1").innerHTML = players[1].score
 		lastTile = undefined
 		curPlayer = (curPlayer + 1) % players.length
 		btnNext.disabled = true
@@ -153,8 +162,14 @@ function next() {
 function edit() {
 	editMode = !editMode;
 	if(editMode) {
+		scores.checkFinalToken()
+		document.getElementById("scorep0").innerHTML = "+" .concat( players[0].score2)
+		document.getElementById("scorep1").innerHTML = "+" .concat( players[1].score2)
 		drawAll()
 	} else {
+		scores.checkToken()
+		document.getElementById("score0").innerHTML = players[0].score
+		document.getElementById("score1").innerHTML = players[1].score
 		drawAll()
 	}
 }
@@ -240,57 +255,28 @@ function placeToken(tile, ex, ey) {
 			if(Math.abs(ex - px) < grid / 4 &&
 					Math.abs(ey - py) < grid / 4) {
 
-				let group = tile.groups[index][0]
-				if(group.hasToken) {
+				let group = tile.groups[index]
+				if(group && group.tokens.length > 0) {
 					return
 				}
-				group.hasToken = true
+				
 				if(!tile.tokens) {
 					tile.tokens = [];
 				}
 				tile.tokens[index] = curPlayer
-				tokens.push({tile : tile, index : index, player : player, type : place[2]})
+				let token = {tile : tile, index : index, player : player, type : place[2]}
+				tokens.push(token)
+				if(group) {
+					group.tokens.push(token)
+				}
 				if(!editMode) {
 					player.token--
-					checkToken()
-					document.getElementById("score0").innerHTML = players[0].score
-					document.getElementById("score1").innerHTML = players[1].score
 					next()
 				}
 				return
 			}
 		}
 	}
-}
-
-// check completion for token
-function checkToken() {
-	tokens = tokens.filter(token => {
-		let finished = token.tile.unfinished[token.index] == 0
-		if(finished) {
-			let members = token.tile.groups[token.index][0].members
-			let number = members.length
-			token.player.token++
-			token.tile.tokens[token.index] = undefined
-			if(token.type == road) {
-				token.player.score += number
-			} else if(token.type == city) {
-				if(number == 2) {
-					token.player.score += number
-				} else {
-					token.player.score += number * 2
-					for(let m of members) {
-						if(m[0].type.star) {
-							token.player.score += 2
-						}
-					}
-				}
-			} else if(token.type == cloister) {
-				token.player.score += 8
-			}
-		}
-		return !finished
-	})
 }
 
 function drawBackup() {
@@ -484,10 +470,11 @@ function touchend(ex, ey) {
 				tileStack.shift()
 				tilesLeft.innerHTML = tileStack.length
 				lastTile = curTile
-				btnNext.disabled = false
-				checkToken()
-				document.getElementById("score0").innerHTML = players[0].score
-				document.getElementById("score1").innerHTML = players[1].score
+				if(players[curPlayer].token == 0) {
+					next()
+				} else {
+					btnNext.disabled = false
+				}
 			}
 		}
 		curTile = undefined

@@ -31,8 +31,8 @@ const tileTypes = [
 		connect : [city, river, city, river],
 		place: [
 			[0.5, 0.15, city, [0]],
-			[0.1, 0.3, farm, [2, 7]],
-			[0.1, 0.75, farm, [3, 6]],
+			[0.1, 0.3, farm, [2, 7], [0]],
+			[0.1, 0.75, farm, [3, 6], [3]],
 			[0.5, 0.87, city, [2]],
 		]
 	},
@@ -48,9 +48,9 @@ const tileTypes = [
 		count:	4,
 		connect : [farm, road, city, road],
 		place: [
-			[0.5, 0.2, farm, []],
+			[0.5, 0.2, farm, [0, 1, 2, 7]],
 			[0.5, 0.5, road, [1, 3]],
-			[0.1, 0.7, farm, []],
+			[0.1, 0.7, farm, [3, 6], [3]],
 			[0.5, 0.87, city, [2]],
 		]
 	},
@@ -58,9 +58,9 @@ const tileTypes = [
 		count:	4,
 		connect : [farm, farm, road, road],
 		place: [
-			[0.3, 0.3, farm, []],
+			[0.3, 0.3, farm, [0,1,2,3,4,7]],
 			[0.5, 0.5, road, [2, 3]],
-			[0.8, 0.8, farm, []],
+			[0.8, 0.8, farm, [5,6]],
 		]
 	},
 	{	// (6)	lake		
@@ -91,9 +91,9 @@ const tileTypes = [
 		connect : [city, city, road, city],
 		place: [
 			[0.5, 0.3, city, [0, 1, 3]],
-			[0.25, 0.85, farm, []],
+			[0.25, 0.85, farm, [4], [0]],
 			[0.5, 0.8, road, [2]],
-			[0.75, 0.85, farm, []],
+			[0.75, 0.85, farm, [5], [0]],
 		]
 	},
 	{	// (9)			
@@ -129,10 +129,10 @@ const tileTypes = [
 		connect : [city, city, road, road],
 		star : true,
 		place: [
-			[0.15, 0.15, city, [0, 1]],
-			[0.3, 0.3, farm, []],
-			[0.5, 0.5, road, [2, 3]],
-			[0.8, 0.8, farm, []],
+			[0.2, 0.2, city, [0, 1]],
+			[0.5, 0.5, farm, []],
+			[0.7, 0.7, road, [2, 3]],
+			[0.85, 0.85, farm, []],
 		]
 	},
 	{	// (13)			
@@ -140,9 +140,9 @@ const tileTypes = [
 		connect : [farm, city, farm, city],
 		star : true,
 		place: [
-			[0.5, 0.05, farm, []],
+			[0.5, 0.05, farm, [0,1], [1]],
 			[0.5, 0.4, city, [1, 3]],
-			[0.5, 0.87, farm, []],
+			[0.5, 0.87, farm, [4,5], [1]],
 		]
 	},
 	{	// (14)	lake		
@@ -158,14 +158,14 @@ const tileTypes = [
 		connect : [city, farm, farm, farm],
 		place: [
 			[0.5, 0.15, city, [0]],
-			[0.5, 0.6, farm, []],
+			[0.5, 0.6, farm, [2,3,4,5,6,7] ,[0]],
 		]
 	},
 	{	// (16)			
 		count:	4,
 		connect : [farm, farm, farm, farm],
 		place: [
-			[0.8, 0.8, farm, []],
+			[0.8, 0.8, farm, [0,1,2,3,4,5,6,7]],
 			[0.5, 0.5, cloister, []],
 		]
 	},
@@ -187,7 +187,7 @@ const tileTypes = [
 		connect : [city, farm, city, farm],
 		place: [
 			[0.5, 0.15, city, [0]],
-			[0.5, 0.5, farm, []],
+			[0.5, 0.5, farm, [2,3,6,7], [0,2]],
 			[0.5, 0.85, city, [2]],
 		]
 	},
@@ -196,7 +196,7 @@ const tileTypes = [
 		connect : [city, city, farm, city],
 		place: [
 			[0.5, 0.3, city, [0, 1, 3]],
-			[0.5, 0.85, farm, []],
+			[0.5, 0.85, farm, [4,5], [0]],
 		]
 	},
 	{	// (20)			
@@ -205,14 +205,14 @@ const tileTypes = [
 		star : true,
 		place: [
 			[0.2, 0.3, city, [0, 1]],
-			[0.7, 0.7, farm, []],
+			[0.7, 0.7, farm, [4,5,6,7], [0]],
 		]
 	},
 	{	// (21)			
 		count:	4,
 		connect : [farm, farm, city, farm],
 		place: [
-			[0.5, 0.35, farm, []],
+			[0.5, 0.35, farm, [0,1,2,3,6,7], [1]],
 			[0.5, 0.85, city, [2]],
 		]
 	},
@@ -271,7 +271,7 @@ const tileTypes = [
 		count:	4,
 		connect : [farm, farm, road, farm],
 		place: [
-			[0.8, 0.2, farm, []],
+			[0.8, 0.2, farm, [1,2,3,4,5,6,7,0]],
 			[0.45, 0.8, road, [2]],
 		]
 	},
@@ -281,7 +281,7 @@ const tileTypes = [
 		place: [
 			[0.5, 0.15, city, [0]],
 			[0.1, 0.5, city, [1]],
-			[0.6, 0.8, farm, []],
+			[0.6, 0.8, farm, [4,5,6,7], [0,1]],
 		]
 	},
 	{	// (29)	lake		
