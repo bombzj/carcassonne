@@ -1,10 +1,12 @@
 
+let boardWidth = 50
 var scores = {
     roadMap : undefined,
     cityMap : undefined,
     farmMap : undefined,
     cloisterMap : undefined,
     tileId : 0,
+    board : [],
 
     initScore : function() {
         this.roadMap = new Map()
@@ -12,13 +14,16 @@ var scores = {
         this.farmMap = new Map()
         this.cloisterMap = new Map()
         tileId = 0;
+        for(let i = 0;i < boardWidth;i++) {
+            board[i] = []
+        }
     },
     addTile : function(tile) {
+        board[tile.x][tile.y] = tile        // update board occupied
         tile.id = tileId
         tileId++
         tile.unfinished = []    // this part needs how many connections to fix
         tile.groups = []
-        let board = updateBoardBase()
         let places = tile.type.place
 
         

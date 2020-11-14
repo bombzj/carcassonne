@@ -1,6 +1,5 @@
 
 let ctx, grid = 80, images = {}, cars, curTile, touchable = false, board=[], curMove, editMode = false, solving = false, curRotate = 0
-let boardWidth = 50
 let offsetX, offsetY
 let touchX, touchY, tileStack, tiles
 let players
@@ -134,7 +133,7 @@ function restart(initGame = -1) {
 			},
 		]	// blue & red
 		let initTile = {
-			x : boardWidth / 2 - 3,
+			x : boardWidth / 2,
 			y : boardWidth / 2,
 			type : tileTypes[14], 
 			rotate : 2
@@ -363,10 +362,14 @@ function drawBackup() {
 
 			startX = 8.0
 			startY = 1.1
+			ctx.globalAlpha = 0.5
+			draw(player.color, grid * startX, grid * startY, grid/4, grid/4)
+			ctx.globalAlpha = 1
+			startX += 0.3
 			for(let i = 0;i < player.token;i++) {
 				draw(player.color, grid * startX, grid * startY, grid/4, grid/4)
 				startX += 0.3
-				if(i == 3) {
+				if(i == 2) {
 					startX = 8.0
 					startY += 0.3
 				}
@@ -412,7 +415,7 @@ function touchstart(ex, ey) {
 	} else if(tileStack.length > 0 && !lastTile){
 		if(ex > 8 * grid && ey < grid) {
 			curTile = {x : -1, y : -1, type : tileTypes[tileStack[0]], rotate : curRotate}
-			return;
+			return
 		}
 	}
 	
@@ -426,6 +429,10 @@ function touchstart(ex, ey) {
 				if(!lastTile || lastTile != tile) {
 					break
 				}
+			} else {
+				tiles.pop()
+				drawAll()
+				break;
 			}
 			curTile4Token = tile
 			drawTokenPlace(tile)
@@ -454,7 +461,7 @@ function touchmove(ex, ey) {
 	if(true) {
 		if(curTile) {
 			if(x >= 0 && x <= boardWidth && y >= 0 && y <= boardWidth) {
-				let board = updateBoardBase()
+				let board = scores.board
 				let vacant = board[x][y] == undefined
 				let connected = false
 				let connect = curTile.type.connect
@@ -544,28 +551,10 @@ function touchend(ex, ey) {
 	dragX = null
 }
 
-// update board occupied
-function updateBoard() {
-	board = updateBoardBase()
-}
-
 function rotateBackup() {
 	curRotate = (curRotate + 1) & 3
 	drawAll()
 }
-
-function updateBoardBase() {
-	let board = []
-	for(let i = 0;i < boardWidth;i++) {
-		board[i] = []
-	}
-	for(let tile of tiles) {
-		board[tile.x][tile.y] = tile
-	}
-	return board;
-}
-
-
 
 let gameId = -1
 let games = []
