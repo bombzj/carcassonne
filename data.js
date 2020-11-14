@@ -337,5 +337,15 @@ const tileTypes = [
 			[0.9, 0.1, farm, [0,7]],
 		]
 	},
+	{	// (35)	crossing		
+		count:	0,
+		connect : [road, road, road, road],
+		place: [
+			[0.5, 0.2, road, [0]],
+			[0.2, 0.5, road, [1]],
+			[0.5, 0.2, road, [3]],
+			[0.5, 0.8, road, [2]],
+		]
+	},
 ]
 

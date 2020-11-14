@@ -199,7 +199,7 @@ var scores = {
 
             let members = group.members
             let number = members.length
-            let addScore;
+            let addScore = 0;
             if(token.type == road) {
                 addScore = number
             } else if(token.type == city) {

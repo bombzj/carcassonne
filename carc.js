@@ -134,10 +134,10 @@ function restart(initGame = -1) {
 			},
 		]	// blue & red
 		let initTile = {
-			x : boardWidth / 2 + 3,
+			x : boardWidth / 2 - 3,
 			y : boardWidth / 2,
 			type : tileTypes[14], 
-			rotate : 0
+			rotate : 2
 		}
 		tiles = [ initTile ]
 		scores.addTile(initTile)
@@ -181,6 +181,16 @@ function restart(initGame = -1) {
 	document.getElementById("scorep0").innerHTML = ""
 	document.getElementById("scorep1").innerHTML = ""
 	drawAll()
+
+	checkFinish()
+}
+
+function checkFinish() {
+	if(tileStack.length == 0) {
+		scores.checkFinalToken()
+		document.getElementById("scorep0").innerHTML = "+" .concat( players[0].score2)
+		document.getElementById("scorep1").innerHTML = "+" .concat( players[1].score2)
+	}
 }
 
 function shuffle(arr) {
@@ -212,20 +222,15 @@ function next() {
 		drawAll()
 		saveGame()
 	}
+	checkFinish()
 }
 
 // toggle edit mode
 function edit() {
 	editMode = !editMode;
 	if(editMode) {
-		scores.checkFinalToken()
-		document.getElementById("scorep0").innerHTML = "+" .concat( players[0].score2)
-		document.getElementById("scorep1").innerHTML = "+" .concat( players[1].score2)
 		drawAll()
 	} else {
-		scores.checkToken()
-		document.getElementById("score0").innerHTML = players[0].score
-		document.getElementById("score1").innerHTML = players[1].score
 		drawAll()
 	}
 }
