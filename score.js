@@ -214,6 +214,17 @@ var scores = {
                         addScore ++
                     }
                 }
+            } else if(token.type == farm) {
+                let citys = new Set()   // add group here
+                for(let m of members) {
+                    let place = m.tile.type.place[m.index]
+                    if(place[4]) {  // connect to city
+                        for(let c of place[4]) {
+                            citys.add(m.tile.groups[c])
+                        }
+                    }
+                }
+                addScore = citys.size * 4
             }
             let tokenPlayers = []
             for(let token2 of group.tokens) {
