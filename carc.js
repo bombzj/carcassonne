@@ -430,9 +430,9 @@ function touchstart(ex, ey) {
 					break
 				}
 			} else {
-				tiles.pop()
-				drawAll()
-				break;
+				// tiles.pop()
+				// drawAll()
+				// break;
 			}
 			curTile4Token = tile
 			drawTokenPlace(tile)

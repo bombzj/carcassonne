@@ -156,7 +156,7 @@ var scores = {
             let finished = group.unfinished == 0
             if(finished) {
                 let members = group.members
-                let number = members.length
+                let number = new Set(members.map(x => x.tile.id)).size
                 let addScore;
                 if(token.type == road) {
                     addScore = number
@@ -203,7 +203,7 @@ var scores = {
             let group = tile.groups[token.index]
 
             let members = group.members
-            let number = members.length
+            let number = new Set(members.map(x => x.tile.id)).size
             let addScore = 0;
             if(token.type == road) {
                 addScore = number
@@ -211,7 +211,7 @@ var scores = {
                 addScore = number
                 for(let m of members) {
                     if(m.tile.type.star) {
-                        addScore ++
+                        addScore++
                     }
                 }
             } else if(token.type == farm) {
@@ -220,7 +220,9 @@ var scores = {
                     let place = m.tile.type.place[m.index]
                     if(place[4]) {  // connect to city
                         for(let c of place[4]) {
-                            citys.add(m.tile.groups[c])
+                            if(m.tile.groups[c].unfinished == 0) {
+                                citys.add(m.tile.groups[c])
+                            }
                         }
                     }
                 }
