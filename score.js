@@ -15,11 +15,11 @@ var scores = {
         this.cloisterMap = new Map()
         tileId = 0;
         for(let i = 0;i < boardWidth;i++) {
-            board[i] = []
+            this.board[i] = []
         }
     },
     addTile : function(tile) {
-        board[tile.x][tile.y] = tile        // update board occupied
+        this.board[tile.x][tile.y] = tile        // update board occupied
         tile.id = tileId
         tileId++
         tile.unfinished = []    // this part needs how many connections to fix
@@ -30,7 +30,7 @@ var scores = {
         for(let pt of nearRect) {
             let x = tile.x + pt[0]
             let y = tile.y + pt[1]
-            let tile2 = board[x][y]
+            let tile2 = this.board[x][y]
             if(tile2) {
                 if(tile2.unfinished[tile2.type.cloisterIndex]) {
                     tile2.unfinished[tile2.type.cloisterIndex]--
@@ -44,7 +44,7 @@ var scores = {
                 for(let pt of nearRect) {
                     let x = tile.x + pt[0]
                     let y = tile.y + pt[1]
-                    if(board[x][y]) {
+                    if(this.board[x][y]) {
                         sum++
                     }
                 }
@@ -55,7 +55,7 @@ var scores = {
                 for(let con of place[3]) {
                     let conRotate = con + 4 - tile.rotate & 3
                     let conXY = connectRect[conRotate]
-                    let tile2 = board[tile.x + conXY[0]][tile.y + conXY[1]]
+                    let tile2 = this.board[tile.x + conXY[0]][tile.y + conXY[1]]
                     if(tile2) {
                         tile.unfinished[index]--
                         let index2 = tile2.type.roadCityConnect[(oppositeCon4[conRotate] + tile2.rotate) & 3]
@@ -99,7 +99,7 @@ var scores = {
                 for(let con of place[3]) {
                     let conRotate = con + 8 - (tile.rotate << 1) & 7
                     let conXY = connectRect[conRotate >> 1]
-                    let tile2 = board[tile.x + conXY[0]][tile.y + conXY[1]]
+                    let tile2 = this.board[tile.x + conXY[0]][tile.y + conXY[1]]
                     if(tile2) {
                         let index2 = tile2.type.farmConnect[(oppositeCon8[conRotate] + (tile2.rotate << 1)) & 7]
                         let group2 = tile2.groups[index2]
