@@ -440,7 +440,7 @@ function touchstart(ex, ey) {
 		}
 	}
 
-	if(ex < 650 && ey < 650) {
+	if(ex < 850 && ey < 850) {
 		dragX = ex - offsetX
 		dragY = ey - offsetY
 	}
