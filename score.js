@@ -139,7 +139,7 @@ var scores = {
             let tile = token.tile
             if(token.type == cloister) {
                 if(tile.unfinished[token.index] == 0) {
-                    token.player.score2 += 9
+                    token.player.score += 9
                     token.player.token++
                     token.tile.tokens[token.index] = undefined
                     return false

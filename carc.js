@@ -56,71 +56,126 @@ function init(c, boardW, boardH, exitX, exitY) {
 		var bcr = event.target.getBoundingClientRect();
 		touchend(event.changedTouches[0].clientX - bcr.x, event.changedTouches[0].clientY - bcr.y)
 	}, false);
+
+	loadAllGame()
+	restart(gameId)
 }
 
-function restart() {
+function restart(initGame = -1) {
+	let game = games[initGame]
+	if(initGame == -1) {
+		gameId++
+	}
 	editMode = false
 	scores.initScore()
 	lastTile = undefined
-	tileStack = []
-	tokens = []
-	let start, end
-	let rivers = []
-	let others = []
-	for(let tile of tileTypes) {
-		if(tile.riverStart) {
-			start = tile.id
-		} else if(tile.riverEnd) {
-			end = tile.id
-		} else {
-			let connect = tile.connect
-			tile.isRiver = connect[0] == river || connect[1] == river || connect[2] == river || connect[3] == river	// river must connect to river
-			if(tile.isRiver) {
-				for(let i = 0;i < tile.count;i++) {
-					rivers.push(tile.id)
-				}
+
+	if(game) {
+		players = game.players.map(item => {
+			return {
+				id : item.id,
+				color: allColors[item.id],
+				token: 7,
+				score: item.score,
+				score2: 0
+			}
+		})
+		tiles = []
+		for(let item of game.tiles) {
+			let tile = {
+				x : item.x,
+				y : item.y,
+				type : tileTypes[item.type], 
+				rotate : item.rotate
+			}
+			scores.addTile(tile)
+			tiles.push(tile)
+		}
+
+		tokens = []
+		for(let item of game.tokens) {
+			let tile = tiles[item.tile]
+			let player = players[item.player]
+			let group = tile.groups[item.index]
+			let token = {
+				tile : tile,
+				index : item.index,
+				player : player,
+				type : item.type
+			}
+			tokens.push(token)
+			if(!tile.tokens) {
+				tile.tokens = []
+			}
+			tile.tokens[item.index] = item.player
+
+			if(group) {
+				group.tokens.push(token)
+			}
+			player.token--
+		}
+		tileStack = game.stack
+		curPlayer = game.curPlayer
+	} else {
+		players = [
+			{
+				id : 0,
+				color: allColors[0],
+				token: 7,
+				score: 0,
+				score2: 0
+			},
+			{
+				id : 1,
+				color: allColors[1],
+				token: 7,
+				score: 0,
+				score2: 0
+			},
+		]	// blue & red
+		let initTile = {
+			x : boardWidth / 2 + 3,
+			y : boardWidth / 2,
+			type : tileTypes[14], 
+			rotate : 0
+		}
+		tiles = [ initTile ]
+		scores.addTile(initTile)
+		curPlayer = 0
+
+		tileStack = []
+		tokens = []
+		let start, end
+		let rivers = []
+		let others = []
+		for(let tile of tileTypes) {
+			if(tile.riverStart) {
+				start = tile.id
+			} else if(tile.riverEnd) {
+				end = tile.id
 			} else {
-				for(let i = 0;i < tile.count;i++) {
-					others.push(tile.id)
+				let connect = tile.connect
+				tile.isRiver = connect[0] == river || connect[1] == river || connect[2] == river || connect[3] == river	// river must connect to river
+				if(tile.isRiver) {
+					for(let i = 0;i < tile.count;i++) {
+						rivers.push(tile.id)
+					}
+				} else {
+					for(let i = 0;i < tile.count;i++) {
+						others.push(tile.id)
+					}
 				}
 			}
 		}
+		shuffle(rivers)
+		shuffle(others)
+		tileStack = rivers.concat(end, others)
 	}
-	shuffle(rivers)
-	shuffle(others)
-	tileStack = others//rivers.concat(end, others)
-	
-	tilesLeft.innerHTML = tileStack.length
-	let initTile = {
-		x : boardWidth / 2 + 3,
-		y : boardWidth / 2,
-		type : tileTypes[14], 
-		rotate : 0
-	}
-	tiles = [ initTile ]
-	scores.addTile(initTile)
+
 
 	offsetX = -grid * (boardWidth / 2 - 2)
 	offsetY = -grid * (boardWidth / 2 - 3)
-
-	players = [
-		{
-			id : 0,
-			color: allColors[0],
-			token: 1,
-			score: 0,
-			score2: 0
-		},
-		{
-			id : 1,
-			color: allColors[1],
-			token: 1,
-			score: 0,
-			score2: 0
-		},
-	]	// blue & red
-	curPlayer = 0
-
+	tilesLeft.innerHTML = tileStack.length
 	document.getElementById("score0").innerHTML = players[0].score
 	document.getElementById("score1").innerHTML = players[1].score
 	document.getElementById("scorep0").innerHTML = ""
@@ -155,6 +210,7 @@ function next() {
 		curPlayer = (curPlayer + 1) % players.length
 		btnNext.disabled = true
 		drawAll()
+		saveGame()
 	}
 }
 
@@ -505,6 +561,54 @@ function updateBoardBase() {
 }
 
 
+
+let gameId = -1
+let games = []
+function saveGame() {
+	try {
+		let game = {
+			id : gameId,
+			players : players.map(item => {
+				return {
+					id : item.id,
+					score : item.score
+				}
+			}),
+			tiles : tiles.map(item => {
+				return {
+					x : item.x,
+					y : item.y,
+					type : item.type.id,
+					rotate : item.rotate
+				}
+			}),
+			tokens : tokens.map(item => {
+				return {
+					tile : item.tile.id,
+					index : item.index,
+					player : item.player.id,
+					type : item.type
+				}
+			}),
+			stack : tileStack,
+			curPlayer : curPlayer
+		}
+		localStorage.setItem("game"+gameId, JSON.stringify(game));
+	} catch(e) { console.log(e) }
+}
+
+function loadAllGame() {
+	gameId = -1
+	try {
+		let jsonString
+		while(jsonString = localStorage.getItem("game"+(gameId + 1))) {
+			gameId++
+			games[gameId] = JSON.parse(jsonString)
+		}
+	} catch(e) { console.log(e) }
+}
+
+
 function loadImages(sources, callback){
 	var count = 0,
 			imgNum = 0
@@ -526,3 +630,4 @@ function loadImages(sources, callback){
 function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
+
