@@ -9,6 +9,7 @@ let lastTile	// token can place here only
 let tokens
 
 function init(c, boardW, boardH, exitX, exitY) {
+	btnDelete.disabled = true
 	scores.initTileType()
 	ctx = canvas.getContext("2d")
 	let files = []
@@ -57,15 +58,11 @@ function init(c, boardW, boardH, exitX, exitY) {
 	}, false);
 
 	loadAllGame()
-	restart(gameId)
+	restart()
 }
 
-function restart(initGame = -1) {
-	let game = games[initGame]
-	if(initGame == -1) {
-		gameId++
-	}
-	editMode = false
+function restart() {
+	let game = games[gameId]
 	scores.initScore()
 	lastTile = undefined
 
@@ -94,6 +91,9 @@ function restart(initGame = -1) {
 		tokens = []
 		for(let item of game.tokens) {
 			let tile = tiles[item.tile]
+			if(!tile) {
+				continue
+			}
 			let player = players[item.player]
 			let group = tile.groups[item.index]
 			let token = {
@@ -229,10 +229,26 @@ function edit() {
 	editMode = !editMode;
 	if(editMode) {
 		drawAll()
+		btnDelete.disabled = false
 	} else {
 		drawAll()
+		btnDelete.disabled = true
 	}
 }
+
+// delete selected tile
+function deleteTile() {
+	if(curTile4Token) {
+		let id = curTile4Token.id
+		let game = games[gameId]
+		if(game && id > 0) {
+			curTile4Token = undefined
+			game.tiles.splice(id, 1)
+			restart()
+		}
+	}
+}
+
 // remove all cars
 function empty() {
 	cars = []
@@ -543,6 +559,8 @@ function touchend(ex, ey) {
 				} else {
 					btnNext.disabled = false
 				}
+			} else {
+				saveGame()
 			}
 		}
 		curTile = undefined
@@ -588,6 +606,7 @@ function saveGame() {
 			curPlayer : curPlayer
 		}
 		localStorage.setItem("game"+gameId, JSON.stringify(game));
+		games[gameId] = game
 	} catch(e) { console.log(e) }
 }
 
@@ -600,6 +619,12 @@ function loadAllGame() {
 			games[gameId] = JSON.parse(jsonString)
 		}
 	} catch(e) { console.log(e) }
+	gameId = localStorage.getItem("gameId");
+	if(gameId == undefined) {
+		gameId = 0
+	} else {
+		gameId = parseInt(gameId)
+	}
 }
 
 
@@ -619,6 +644,15 @@ function loadImages(sources, callback){
 
 			images[src].src = 'res/' + src + '.png'
 	}
+}
+
+function switchGame(delta) {
+	gameId += delta
+	if(gameId < 0) {
+		gameId = 0
+	}
+	restart()
+	localStorage.setItem("gameId", gameId);
 }
 
 function sleep(ms) {

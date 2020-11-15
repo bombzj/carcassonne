@@ -23,7 +23,7 @@
 </style>
 </head>
 <body onselectstart="return false;">
-    <canvas id="canvas" width="800" height="700" style="margin:0px;float:left" onselectstart="return false;"></canvas>
+    <canvas id="canvas" width="820" height="700" style="margin:0px;float:left" onselectstart="return false;"></canvas>
     <table id="tbl">
         <tr><td>
             <button id="btnNext" onclick="javascript:next()" style="padding:10px;" disabled="true">next</button><br/>
@@ -45,6 +45,13 @@
         </td></tr>
         <tr><td>
             red <span id="score1"></span> <span id="scorep1"></span><br/>
+        </td></tr>
+        <tr><td>
+            <button id="btnPreviousGame" onclick="javascript:switchGame(-1)" style="padding:10px;">&lt;&lt;</button>
+            <button id="btnNextGame" onclick="javascript:switchGame(1)" style="padding:10px;">&gt;&gt;</button>
+        </td></tr>
+        <tr><td>
+            <button id="btnDelete" onclick="javascript:deleteTile()" style="padding:10px;">delete</button>
         </td></tr>
     </table>
 </body>

@@ -5,7 +5,7 @@ const river = 3
 const cloister = 4
 
 const allColors = [
-	'blue', 'red', 'green', 'yellow', 'black'
+	'blue', 'red', 'yellow', 'green', 'black'
 ]
 
 const tileTypes = [
@@ -337,6 +337,98 @@ const tileTypes = [
 		place: [
 			[0.3, 0.6, farm, [1,2,3,4,5,6]],
 			[0.9, 0.1, farm, [0,7]],
+		]
+	},
+	{	// (35)	lake		
+		count:	1,
+		connect : [river, city, river, city],
+		place: [
+			[0.1, 0.5, city, [1, 3]],
+			[0.28, 0.8, farm, [1,4], [0]],
+			[0.80, 0.8, farm, [5,0], [0]],
+		]
+	},
+	{	// (36)	lake		
+		count:	1,
+		connect : [river, river, farm, river],
+		place: [
+			[0.2, 0.2, farm, [1,2]],
+			[0.5, 0.8, farm, [3,4,5,6]],
+			[0.8, 0.2, farm, [0,7]],
+		]
+	},
+	{	// (37)	lake		
+		count:	1,
+		connect : [city, farm, river, farm],
+		place: [
+			[0.5, 0.15, city, [0]],
+			[0.2, 0.8, farm, [2,3,4], [0]],
+			[0.8, 0.8, farm, [5,6,7], [0]],
+		]
+	},
+	{	// (38)			
+		count:	1,
+		connect : [farm, city, farm, farm],
+		place: [
+			[0.45, 0.45, city, [1]],
+			[0.5, 0.15, farm, [0,1], [0]],
+			[0.8, 0.8, farm, [4,5,6,7], [0]],
+		]
+	},
+	{	// (39)			
+		count:	1,
+		connect : [city, city, farm, city],
+		place: [
+			[0.5, 0.1, city, [0]],
+			[0.15, 0.5, city, [1]],
+			[0.85, 0.5, city, [3]],
+			[0.5, 0.5, farm, [4,5], [0,1,2]],
+		]
+	},
+	{	// (40)			
+		count:	1,
+		connect : [city, farm, road, farm],
+		place: [
+			[0.5, 0.15, city, [0]],
+			[0.2, 0.5, farm, [2,3,4], [0]],
+			[0.8, 0.5, farm, [5,6,7], [0]],
+			[0.5, 0.8, road, [2]],
+		]
+	},
+	{	// (41)			
+		count:	1,
+		connect : [city, city, city, city],
+		place: [
+			[0.5, 0.15, city, [0]],
+			[0.1, 0.5, city, [1]],
+			[0.5, 0.85, city, [2]],
+			[0.9, 0.5, city, [3]],
+			[0.5, 0.5, farm, [], [0,1,2,3]],
+		]
+	},
+	{	// (42)			
+		count:	1,
+		connect : [road, road, road, road],
+		place: [
+			[0.3, 0.3, road, [0, 1]],
+			[0.7, 0.7, road, [2, 3]],
+			[0.15, 0.15, farm, [1, 2]],
+			[0.5, 0.5, farm, [0,3,4,7]],
+			[0.85, 0.85, farm, [5,6]],
+		]
+	},
+	{	// (43)			
+		count:	1,
+		connect : [road, city, road, city],
+		place: [
+			[0.15, 0.5, city, [1]],
+			[0.85, 0.5, city, [3]],
+			[0.5, 0.15, road, [0]],
+			[0.5, 0.85, road, [2]],
+			[0.25, 0.1, farm, [1], [0]],
+			[0.75, 0.1, farm, [0], [1]],
+			[0.25, 0.9, farm, [4], [0]],
+			[0.75, 0.9, farm, [5], [1]],
 		]
 	},
 ]
