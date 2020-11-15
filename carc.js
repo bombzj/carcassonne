@@ -300,8 +300,8 @@ function drawTokenPlace(tile, ex, ey) {
 			let placeR = rotate(place, tile.rotate)
 			let px = x + grid * placeR[0] * zoomTile
 			let py = y + grid * placeR[1] * zoomTile
-			if(Math.abs(ex - px) < grid / 4 &&
-					Math.abs(ey - py) < grid / 4) {
+			if(Math.abs(ex - px) < grid / 3 &&
+					Math.abs(ey - py) < grid / 3) {
 				
 			} else {
 				ctx.globalAlpha = 0.5
@@ -327,8 +327,8 @@ function placeToken(tile, ex, ey) {
 			let placeR = rotate(place, tile.rotate)
 			let px = x + grid * placeR[0] * zoomTile
 			let py = y + grid * placeR[1] * zoomTile
-			if(Math.abs(ex - px) < grid / 4 &&
-					Math.abs(ey - py) < grid / 4) {
+			if(Math.abs(ex - px) < grid / 3 &&
+					Math.abs(ey - py) < grid / 3) {
 
 				let group = tile.groups[index]
 				if(group && group.tokens.length > 0) {

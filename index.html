@@ -25,6 +25,9 @@
     button {
         padding:10px;
     }
+    .score, .score span{
+        font-size: 24px;
+    }
 </style>
 </head>
 <body onselectstart="return false;">
@@ -33,7 +36,7 @@
         <tr><td>
             <button id="btnNext" onclick="javascript:next()" disabled="true">next</button><br/>
         </td></tr>
-        <tr><td>
+        <tr><td class="score">
             stack <span id="tilesLeft"></span><br/>
         </td></tr>
         <tr><td>
@@ -48,13 +51,13 @@
         <tr><td>
             <button onclick="javascript:rotateBackup()">rotate</button><br/>
         </td></tr>
-        <tr><td>
+        <tr><td class="score">
             blue <span id="score0"></span> <span id="scorep0"></span><br/>
         </td></tr>
-        <tr><td>
+        <tr><td class="score">
             red <span id="score1"></span> <span id="scorep1"></span><br/>
         </td></tr>
-        <tr><td>
+        <tr><td class="score">
             green <span id="score2"></span> <span id="scorep2"></span><br/>
         </td></tr>
         <tr><td>
