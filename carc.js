@@ -61,8 +61,11 @@ function init(c, boardW, boardH, exitX, exitY) {
 	restart()
 }
 
-function restart() {
+function restart(playerNumber = 2, clear = false) {
 	let game = games[gameId]
+	if(clear) {
+		game = undefined
+	}
 	scores.initScore()
 	lastTile = undefined
 
@@ -116,22 +119,16 @@ function restart() {
 		tileStack = game.stack
 		curPlayer = game.curPlayer
 	} else {
-		players = [
-			{
-				id : 0,
-				color: allColors[0],
-				token: 7,
-				score: 0,
-				score2: 0
-			},
-			{
-				id : 1,
-				color: allColors[1],
-				token: 7,
-				score: 0,
-				score2: 0
-			},
-		]	// blue & red
+		players = []
+		for(let i = 0;i < playerNumber;i++) {
+			players.push({
+					id : i,
+					color: allColors[i],
+					token: 7,
+					score: 0,
+					score2: 0
+				},)
+		}
 		let initTile = {
 			x : boardWidth / 2,
 			y : boardWidth / 2,
@@ -175,8 +172,9 @@ function restart() {
 	offsetX = -grid * (boardWidth / 2 - 2)
 	offsetY = -grid * (boardWidth / 2 - 3)
 	tilesLeft.innerHTML = tileStack.length
-	document.getElementById("score0").innerHTML = players[0].score
-	document.getElementById("score1").innerHTML = players[1].score
+	for(let i = 0;i < players.length;i++) {
+		document.getElementById("score" + i).innerHTML = players[i].score
+	}
 	document.getElementById("scorep0").innerHTML = ""
 	document.getElementById("scorep1").innerHTML = ""
 	drawAll()
@@ -213,8 +211,9 @@ function shuffle(arr) {
 function next() {
 	if(lastTile) {
 		scores.checkToken()
-		document.getElementById("score0").innerHTML = players[0].score
-		document.getElementById("score1").innerHTML = players[1].score
+		for(let i = 0;i < players.length;i++) {
+			document.getElementById("score" + i).innerHTML = players[i].score
+		}
 		lastTile = undefined
 		curPlayer = (curPlayer + 1) % players.length
 		btnNext.disabled = true
@@ -268,9 +267,9 @@ function drawAll(c) {
 				let tokenPlace = rotate(place[index], tile.rotate)
 				if(players[token]) {
 					draw(players[token].color, 
-						grid * (tile.x + tokenPlace[0]) + offsetX - grid/8, 
-						grid * (tile.y + tokenPlace[1]) + offsetY - grid/8, 
-						grid/4, grid/4)
+						grid * (tile.x + tokenPlace[0]) + offsetX - grid/6, 
+						grid * (tile.y + tokenPlace[1]) + offsetY - grid/6, 
+						grid/3, grid/3)
 				}
 			}
 		}
@@ -308,9 +307,9 @@ function drawTokenPlace(tile, ex, ey) {
 				ctx.globalAlpha = 0.5
 			}
 			draw(players[curPlayer].color, 
-				px - grid / 4, 
-				py - grid / 4,
-				grid / 2, grid / 2)
+				px - grid / 3, 
+				py - grid / 3,
+				grid / 1.5, grid / 1.5)
 			ctx.globalAlpha = 1
 		}
 	}
@@ -355,18 +354,19 @@ function placeToken(tile, ex, ey) {
 	}
 }
 
+const backupStartX = 7.8
 function drawBackup() {
-	let startX = 8.0
-	let startY = 0.1
-	let w = 0.6
+	let startX = backupStartX
+	let startY = 0
+	let w = 0.5
 	if(editMode) {
 		for(let [index, tileType] of tileTypes.entries()) {
 			draw(index, grid * startX, grid * startY, grid*w, grid*w, curRotate)
 			tileType.position = [startX, startY, w, w];	// TODO: should be one time job
-			startY += 0.62
-			if((index + 1) % 12 == 0) {
-				startX += 0.62
-				startY = 0.1
+			startY += w + 0.02
+			if((index + 1) % 15 == 0) {
+				startX += w + 0.02
+				startY = 0
 			}
 		}
 	} else {
@@ -376,7 +376,7 @@ function drawBackup() {
 			}
 			let player = players[curPlayer]
 
-			startX = 8.0
+			startX = backupStartX
 			startY = 1.1
 			ctx.globalAlpha = 0.5
 			draw(player.color, grid * startX, grid * startY, grid/4, grid/4)
@@ -386,7 +386,7 @@ function drawBackup() {
 				draw(player.color, grid * startX, grid * startY, grid/4, grid/4)
 				startX += 0.3
 				if(i == 2) {
-					startX = 8.0
+					startX = backupStartX
 					startY += 0.3
 				}
 			}
@@ -429,7 +429,7 @@ function touchstart(ex, ey) {
 			}
 		}
 	} else if(tileStack.length > 0 && !lastTile){
-		if(ex > 8 * grid && ey < grid) {
+		if(ex > backupStartX * grid && ey < grid) {
 			curTile = {x : -1, y : -1, type : tileTypes[tileStack[0]], rotate : curRotate}
 			return
 		}

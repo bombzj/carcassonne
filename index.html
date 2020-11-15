@@ -9,6 +9,8 @@
 <script src="data.js?i=4"></script>
 <script src="carc.js?i=3"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
+<script src="https://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
+<script src="https://libs.baidu.com/jqueryui/1.8.22/jquery-ui.min.js"></script>
 <style>
     body, button, span {
         font-size: 32px;
@@ -18,27 +20,33 @@
         position: fixed;
     }
     td {
-        padding-top:10px;
+        padding-top:5px;
+    }
+    button {
+        padding:10px;
     }
 </style>
 </head>
 <body onselectstart="return false;">
-    <canvas id="canvas" width="820" height="700" style="margin:0px;float:left" onselectstart="return false;"></canvas>
+    <canvas id="canvas" width="770" height="700" style="margin:0px;float:left" onselectstart="return false;"></canvas>
     <table id="tbl">
         <tr><td>
-            <button id="btnNext" onclick="javascript:next()" style="padding:10px;" disabled="true">next</button><br/>
+            <button id="btnNext" onclick="javascript:next()" disabled="true">next</button><br/>
         </td></tr>
         <tr><td>
             stack <span id="tilesLeft"></span><br/>
         </td></tr>
         <tr><td>
-            <button onclick="javascript:if(confirm('Are you sure?'))restart()" style="padding:10px;">restart</button>
+            <button onclick="javascript:if(confirm('Are you sure?'))restart(2, true)">restart 2</button>
         </td></tr>
         <tr><td>
-            <button onclick="javascript:edit()" style="padding:10px;">edit</button><br/>
+            <button onclick="javascript:if(confirm('Are you sure?'))restart(3, true)">restart 3</button>
         </td></tr>
         <tr><td>
-            <button onclick="javascript:rotateBackup()" style="padding:10px;">rotate</button><br/>
+            <button onclick="javascript:edit()">edit</button><br/>
+        </td></tr>
+        <tr><td>
+            <button onclick="javascript:rotateBackup()">rotate</button><br/>
         </td></tr>
         <tr><td>
             blue <span id="score0"></span> <span id="scorep0"></span><br/>
@@ -47,11 +55,14 @@
             red <span id="score1"></span> <span id="scorep1"></span><br/>
         </td></tr>
         <tr><td>
-            <button id="btnPreviousGame" onclick="javascript:switchGame(-1)" style="padding:10px;">&lt;&lt;</button>
-            <button id="btnNextGame" onclick="javascript:switchGame(1)" style="padding:10px;">&gt;&gt;</button>
+            green <span id="score2"></span> <span id="scorep2"></span><br/>
         </td></tr>
         <tr><td>
-            <button id="btnDelete" onclick="javascript:deleteTile()" style="padding:10px;">delete</button>
+            <button id="btnPreviousGame" onclick="javascript:switchGame(-1)">&lt;&lt;</button>
+            <button id="btnNextGame" onclick="javascript:switchGame(1)">&gt;&gt;</button>
+        </td></tr>
+        <tr><td>
+            <button id="btnDelete" onclick="javascript:deleteTile()">delete</button>
         </td></tr>
     </table>
 </body>

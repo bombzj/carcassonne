@@ -5,7 +5,7 @@ const river = 3
 const cloister = 4
 
 const allColors = [
-	'blue', 'red', 'yellow', 'green', 'black'
+	'blue', 'red', 'green', 'yellow', 'black'
 ]
 
 const tileTypes = [
