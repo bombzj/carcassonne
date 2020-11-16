@@ -25,6 +25,9 @@ function init(c, boardW, boardH, exitX, exitY) {
 	});
 
 	
+	offsetX = -grid * (boardWidth / 2 - 2)
+	offsetY = -grid * (boardWidth / 2 - 3)
+
 	canvas.addEventListener("mousedown", function (event) {
 		if(!touchable) {
 			touchstart(event.offsetX, event.offsetY)
@@ -166,11 +169,12 @@ function restart(playerNumber = 2, clear = false) {
 		shuffle(rivers)
 		shuffle(others)
 		tileStack = rivers.concat(end, others)
+		
+		offsetX = -grid * (boardWidth / 2 - 2)
+		offsetY = -grid * (boardWidth / 2 - 3)
 	}
 
 
-	offsetX = -grid * (boardWidth / 2 - 2)
-	offsetY = -grid * (boardWidth / 2 - 3)
 	tilesLeft.innerHTML = tileStack.length
 	for(let i = 0;i < players.length;i++) {
 		document.getElementById("score" + i).innerHTML = players[i].score
@@ -354,7 +358,7 @@ function placeToken(tile, ex, ey) {
 	}
 }
 
-const backupStartX = 7.8
+const backupStartX = 8
 function drawBackup() {
 	let startX = backupStartX
 	let startY = 0
