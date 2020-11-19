@@ -353,7 +353,7 @@ const tileTypes = [
 		]
 	},
 	{	// (36)	lake		
-		count:	1,
+		count:	0,
 		connect : [river, river, farm, river],
 		place: [
 			[0.2, 0.2, farm, [1,2]],

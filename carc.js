@@ -168,7 +168,7 @@ function restart(playerNumber = 2, clear = false) {
 		}
 		shuffle(rivers)
 		shuffle(others)
-		tileStack = rivers.concat(end, others)
+		tileStack = [36].concat(rivers, end, others)
 		
 		offsetX = -grid * (boardWidth / 2 - 2)
 		offsetY = -grid * (boardWidth / 2 - 3)
@@ -178,9 +178,8 @@ function restart(playerNumber = 2, clear = false) {
 	tilesLeft.innerHTML = tileStack.length
 	for(let i = 0;i < players.length;i++) {
 		document.getElementById("score" + i).innerHTML = players[i].score
+		document.getElementById("scorep"  + i).innerHTML = ""
 	}
-	document.getElementById("scorep0").innerHTML = ""
-	document.getElementById("scorep1").innerHTML = ""
 	drawAll()
 
 	checkFinish()
@@ -189,8 +188,9 @@ function restart(playerNumber = 2, clear = false) {
 function checkFinish() {
 	if(tileStack.length == 0) {
 		scores.checkFinalToken()
-		document.getElementById("scorep0").innerHTML = "+" .concat( players[0].score2)
-		document.getElementById("scorep1").innerHTML = "+" .concat( players[1].score2)
+		for(let i = 0;i < players.length;i++) {
+			document.getElementById("scorep" + i).innerHTML = "+" .concat( players[i].score2)
+		}
 	}
 }
 
