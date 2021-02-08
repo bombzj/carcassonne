@@ -7,13 +7,14 @@ var scores = {
     cloisterMap : undefined,
     tileId : 0,
     board : [],
+    solutions : [],
 
     initScore : function() {
         this.roadMap = new Map()
         this.cityMap = new Map()
         this.farmMap = new Map()
         this.cloisterMap = new Map()
-        tileId = 0;
+        tileId = 0
         for(let i = 0;i < boardWidth;i++) {
             this.board[i] = []
         }
@@ -187,7 +188,83 @@ var scores = {
             return !finished
         })
     },
-
+    // find all possible places
+    updateSolution(curType) {
+        let solutionBoard = []
+        for(let i = 0;i < boardWidth;i++) {
+            solutionBoard[i] = []
+        }
+        this.solutions = []
+        for(let tile of tiles) {
+            for(let c of connectRect) {
+                let ok = false
+                let x = tile.x + c[0]
+                let y = tile.y + c[1]
+                if(solutionBoard[x][y]) {
+                    continue
+                }
+                for(let rotate = 0;rotate < 4;rotate++) {
+                    if(this.testPlace(x, y, curType, rotate)) {
+                        ok = true
+                        break
+                    }
+                }
+                if(ok) {
+                    solutionBoard[x][y] = true
+                    this.solutions.push({
+                        x: x,
+                        y: y
+                    })
+                }
+            }
+        }
+    },
+    testPlace(x, y, type, rotate) {
+        if(this.board[x][y] != undefined) {
+            return false
+        }
+        let vacant = this.board[x][y] == undefined
+        let connected = false
+        let connect = type.connect
+        let isRiver = type.isRiver	// river must connect to river
+        if(vacant) {
+            let tile = this.board[x-1][y];
+            if(tile) {
+                vacant = connect[1 + rotate & 3] == tile.type.connect[3 + tile.rotate & 3]
+                if(vacant && (!isRiver || isRiver && connect[1 + rotate & 3] == river)) {
+                    connected = true;
+                }
+            }
+        }
+        if(vacant) {
+            let tile = this.board[x+1][y];
+            if(tile) {
+                vacant = connect[3 + rotate & 3] == tile.type.connect[1 + tile.rotate & 3]
+                if(vacant && (!isRiver || isRiver && connect[3 + rotate & 3] == river)) {
+                    connected = true;
+                }
+            }
+        }
+        if(vacant) {
+            let tile = this.board[x][y-1];
+            if(tile) {
+                vacant = connect[0 + rotate & 3] == tile.type.connect[2 + tile.rotate & 3]
+                if(vacant && (!isRiver || isRiver && connect[ + rotate & 3] == river)) {
+                    connected = true;
+                }
+            }
+        }
+        if(vacant) {
+            let tile = this.board[x][y+1];
+            if(tile) {
+                vacant = connect[2 + rotate & 3] == tile.type.connect[0 + tile.rotate & 3]
+                if(vacant && (!isRiver || isRiver && connect[2 + rotate & 3] == river)) {
+                    connected = true;
+                }
+            }
+        }
+        return vacant && connected
+    },
     // check final score when endgame
     checkFinalToken : function () {
         for(let token of tokens) {

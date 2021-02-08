@@ -16,6 +16,8 @@ function init(c, boardW, boardH, exitX, exitY) {
 	for(let [index, item] of tileTypes.entries()) {
 		files.push(index)
 		item.id = index
+		let connect = item.connect
+		item.isRiver = connect[0] == river || connect[1] == river || connect[2] == river || connect[3] == river	// river must connect to river
 	}
 	for(let c of allColors) {
 		files.push(c)
@@ -153,8 +155,6 @@ function restart(playerNumber = 2, clear = false) {
 			} else if(tile.riverEnd) {
 				end = tile.id
 			} else {
-				let connect = tile.connect
-				tile.isRiver = connect[0] == river || connect[1] == river || connect[2] == river || connect[3] == river	// river must connect to river
 				if(tile.isRiver) {
 					for(let i = 0;i < tile.count;i++) {
 						rivers.push(tile.id)
@@ -173,7 +173,9 @@ function restart(playerNumber = 2, clear = false) {
 		offsetX = -grid * (boardWidth / 2 - 2)
 		offsetY = -grid * (boardWidth / 2 - 3)
 	}
-
+	if(tileStack.length != 0) {
+		scores.updateSolution(tileTypes[tileStack[0]])
+	}
 
 	tilesLeft.innerHTML = tileStack.length
 	for(let i = 0;i < players.length;i++) {
@@ -221,6 +223,9 @@ function next() {
 		lastTile = undefined
 		curPlayer = (curPlayer + 1) % players.length
 		btnNext.disabled = true
+		if(tileStack.length != 0) {
+			scores.updateSolution(tileTypes[tileStack[0]])
+		}
 		drawAll()
 		saveGame()
 	}
@@ -263,6 +268,13 @@ function empty() {
 
 function drawAll(c) {
 	ctx.clearRect(0,0,canvas.width,canvas.height); 
+	if(!lastTile) {
+		ctx.fillStyle='#CCCCCC'
+		// draw all possible places
+		for(let so of scores.solutions) {
+			ctx.fillRect(grid * so.x + offsetX, grid * so.y + offsetY, grid, grid)
+		}
+	}
 	for(let tile of tiles) {
 		draw(tile.type.id, grid * tile.x + offsetX, grid * tile.y + offsetY, grid, grid, tile.rotate)
 		if(tile.tokens) {
@@ -481,48 +493,7 @@ function touchmove(ex, ey) {
 	if(true) {
 		if(curTile) {
 			if(x >= 0 && x <= boardWidth && y >= 0 && y <= boardWidth) {
-				let board = scores.board
-				let vacant = board[x][y] == undefined
-				let connected = false
-				let connect = curTile.type.connect
-				let isRiver = curTile.type.isRiver	// river must connect to river
-				if(vacant) {
-					let tile = board[x-1][y];
-					if(tile) {
-						vacant = connect[1 + curTile.rotate & 3] == tile.type.connect[3 + tile.rotate & 3]
-						if(vacant && (!isRiver || isRiver && connect[1 + curTile.rotate & 3] == river)) {
-							connected = true;
-						}
-					}
-				}
-				if(vacant) {
-					let tile = board[x+1][y];
-					if(tile) {
-						vacant = connect[3 + curTile.rotate & 3] == tile.type.connect[1 + tile.rotate & 3]
-						if(vacant && (!isRiver || isRiver && connect[3 + curTile.rotate & 3] == river)) {
-							connected = true;
-						}
-					}
-				}
-				if(vacant) {
-					let tile = board[x][y-1];
-					if(tile) {
-						vacant = connect[0 + curTile.rotate & 3] == tile.type.connect[2 + tile.rotate & 3]
-						if(vacant && (!isRiver || isRiver && connect[ + curTile.rotate & 3] == river)) {
-							connected = true;
-						}
-					}
-				}
-				if(vacant) {
-					let tile = board[x][y+1];
-					if(tile) {
-						vacant = connect[2 + curTile.rotate & 3] == tile.type.connect[0 + tile.rotate & 3]
-						if(vacant && (!isRiver || isRiver && connect[2 + curTile.rotate & 3] == river)) {
-							connected = true;
-						}
-					}
-				}
-				if(vacant && connected) {
+				if(scores.testPlace(x, y, curTile.type, curTile.rotate)) {
 					curTile.x = x
 					curTile.y = y
 				} else {
