@@ -1,5 +1,5 @@
 
-let ctx, grid = 80, images = {}, cars, curTile, touchable = false, board=[], curMove, editMode = false, solving = false, curRotate = 0
+let ctx, grid = 80, images = {}, cars, curTile, touchable = false, board=[], curMove, editMode = false, solving = false, curRotate
 let offsetX, offsetY
 let touchX, touchY, tileStack, tiles
 let players
@@ -73,6 +73,7 @@ function restart(playerNumber = 2, clear = false) {
 	}
 	scores.initScore()
 	lastTile = undefined
+	curRotate = 0
 
 	if(game) {
 		players = game.players.map(item => {
@@ -223,8 +224,14 @@ function next() {
 		lastTile = undefined
 		curPlayer = (curPlayer + 1) % players.length
 		btnNext.disabled = true
-		if(tileStack.length != 0) {
+		let need = true
+		while(need && tileStack.length != 0) {
 			scores.updateSolution(tileTypes[tileStack[0]])
+			if(scores.solutions.length > 0) {
+				need = false
+			} else {	// no where to place
+				tileStack.shift()
+			}
 		}
 		drawAll()
 		saveGame()
