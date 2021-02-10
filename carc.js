@@ -7,6 +7,7 @@ let curPlayer
 let curTile4Token
 let lastTile	// token can place here only
 let tokens
+let gameMode
 
 function init(c, boardW, boardH, exitX, exitY) {
 	btnDelete.disabled = true
@@ -66,7 +67,7 @@ function init(c, boardW, boardH, exitX, exitY) {
 	restart()
 }
 
-function restart(playerNumber = 2, clear = false) {
+function restart(playerNumber = 2, clear = false, mode = 'classic') {
 	let game = games[gameId]
 	if(clear) {
 		game = undefined
@@ -76,6 +77,7 @@ function restart(playerNumber = 2, clear = false) {
 	curRotate = 0
 
 	if(game) {
+		gameMode = game.mode || 'classic'
 		players = game.players.map(item => {
 			return {
 				id : item.id,
@@ -125,7 +127,9 @@ function restart(playerNumber = 2, clear = false) {
 		tileStack = game.stack
 		curPlayer = game.curPlayer
 	} else {
+		gameMode = mode
 		players = []
+		let crossingTile = 21
 		for(let i = 0;i < playerNumber;i++) {
 			players.push({
 					id : i,
@@ -135,14 +139,46 @@ function restart(playerNumber = 2, clear = false) {
 					score2: 0
 				},)
 		}
-		let initTile = {
-			x : boardWidth / 2,
-			y : boardWidth / 2,
-			type : tileTypes[14], 
-			rotate : 2
+		let initTile
+		if(gameMode == 'classic') {
+			initTile = {
+				x : boardWidth / 2,
+				y : boardWidth / 2,
+				type : tileTypes[21], 
+				rotate : 2
+			}
+		} else if(gameMode == 'river') {
+			initTile = {
+				x : boardWidth / 2,
+				y : boardWidth / 2,
+				type : tileTypes[14], 
+				rotate : 2
+			}
+		} else if(gameMode == 'river2') {
+			initTile = {
+				x : boardWidth / 2,
+				y : boardWidth / 2,
+				type : tileTypes[14], 
+				rotate : 2
+			}
 		}
 		tiles = [ initTile ]
-		scores.addTile(initTile)
+		if(gameMode == 'george') {
+			initTile = {
+				x : boardWidth / 2,
+				y : boardWidth / 2,
+				type : tileTypes[14], 
+				rotate : 2
+			}
+			let initTile2 = {
+				x : boardWidth / 2 + 1,
+				y : boardWidth / 2 - 1,
+				type : tileTypes[14], 
+				rotate : 3
+			}
+			tiles = [ initTile, initTile2 ]
+		}
+		scores.addTiles(tiles)
 		curPlayer = 0
 
 		tileStack = []
@@ -155,6 +191,8 @@ function restart(playerNumber = 2, clear = false) {
 				start = tile.id
 			} else if(tile.riverEnd) {
 				end = tile.id
+			} else if(tile.id == crossingTile) {
+				// start for classic version
 			} else {
 				if(tile.isRiver) {
 					for(let i = 0;i < tile.count;i++) {
@@ -167,9 +205,27 @@ function restart(playerNumber = 2, clear = false) {
 				}
 			}
 		}
-		shuffle(rivers)
-		shuffle(others)
-		tileStack = [36].concat(rivers, end, others)
+		if(gameMode == 'river') {
+			rivers = [2, 3, 6, 7, 29, 30, 31, 32, 33, 34]
+			shuffle(rivers)
+			others.push(crossingTile)
+			shuffle(others)
+			tileStack = rivers.concat(end, others)
+		} else if(gameMode == 'river2') {
+			rivers = [3, 6, 7, 30, 32, 34, 35, 37, 46]
+			shuffle(rivers)
+			others.push(crossingTile)
+			shuffle(others)
+			tileStack = [36].concat(rivers, end, others)
+		} else if(gameMode == 'george') {
+			shuffle(rivers)
+			others.push(crossingTile)
+			shuffle(others)
+			tileStack = [45].concat(rivers, end, others)
+		} else {	// classic
+			shuffle(others)
+			tileStack = others
+		}
 		
 		offsetX = -grid * (boardWidth / 2 - 2)
 		offsetY = -grid * (boardWidth / 2 - 3)
@@ -182,6 +238,10 @@ function restart(playerNumber = 2, clear = false) {
 	for(let i = 0;i < players.length;i++) {
 		document.getElementById("score" + i).innerHTML = players[i].score
 		document.getElementById("scorep"  + i).innerHTML = ""
+		document.getElementById("scorebox" + i).style.display = ''
+	}
+	for(let i = players.length;i < 5;i++) {
+		document.getElementById("scorebox" + i).style.display = 'none'
 	}
 	drawAll()
 
@@ -202,7 +262,7 @@ function shuffle(arr) {
 	if(len < 2) {
 		return
 	}
-	for(let i = 0;i < len;i++) {
+	for(let i = 0;i < len * 5;i++) {
 		let a = Math.floor(Math.random() * len)
 		let b = Math.floor(Math.random() * len)
 		if(a == b) {
@@ -279,7 +339,9 @@ function drawAll(c) {
 		ctx.fillStyle='#CCCCCC'
 		// draw all possible places
 		for(let so of scores.solutions) {
-			ctx.fillRect(grid * so.x + offsetX, grid * so.y + offsetY, grid, grid)
+			if(so.rotates.indexOf(curRotate) != -1) {
+				ctx.fillRect(grid * so.x + offsetX, grid * so.y + offsetY, grid, grid)
+			}
 		}
 	}
 	for(let tile of tiles) {
@@ -387,7 +449,7 @@ function drawBackup() {
 			draw(index, grid * startX, grid * startY, grid*w, grid*w, curRotate)
 			tileType.position = [startX, startY, w, w];	// TODO: should be one time job
 			startY += w + 0.02
-			if((index + 1) % 15 == 0) {
+			if((index + 1) % 16 == 0) {
 				startX += w + 0.02
 				startY = 0
 			}
@@ -455,6 +517,18 @@ function touchstart(ex, ey) {
 		if(ex > backupStartX * grid && ey < grid) {
 			curTile = {x : -1, y : -1, type : tileTypes[tileStack[0]], rotate : curRotate}
 			return
+		}
+		let x = Math.floor((ex - offsetX) / grid)
+		let y = Math.floor((ey - offsetY) / grid)
+		// click on a possible place
+		let so = scores.solutionBoard[x] && scores.solutionBoard[x][y]
+		if(so) {
+			let r = so.rotates.indexOf(curRotate)
+			if(r != -1) {
+				curTile = {x : x, y : y, type : tileTypes[tileStack[0]], rotate : so.rotates[r]}
+				drawAll()
+				return
+			}
 		}
 	}
 	
@@ -562,6 +636,7 @@ function saveGame() {
 	try {
 		let game = {
 			id : gameId,
+			mode : gameMode,
 			players : players.map(item => {
 				return {
 					id : item.id,
@@ -612,19 +687,19 @@ function loadAllGame() {
 
 function loadImages(sources, callback){
 	var count = 0,
-			imgNum = 0
+		imgNum = 0
 	for(let src of sources){
-			imgNum++
+		imgNum++
 	}
 	for(let src of sources){
-			images[src] = new Image(src);
-			images[src].onload = images[src].onerror = function(){
-					if(++count >= imgNum){
-							callback(images)
-					}
-			};
+		images[src] = new Image(src);
+		images[src].onload = images[src].onerror = function(){
+			if(++count >= imgNum){
+				callback(images)
+			}
+		};
 
-			images[src].src = 'res/' + src + '.png'
+		images[src].src = 'res/' + src + '.png'
 	}
 }
 

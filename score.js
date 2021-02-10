@@ -7,7 +7,8 @@ var scores = {
     cloisterMap : undefined,
     tileId : 0,
     board : [],
-    solutions : [],
+    solutions : [],         // list of solutions
+    solutionBoard: [],      // board of solutions in 2d array
 
     initScore : function() {
         this.roadMap = new Map()
@@ -17,6 +18,11 @@ var scores = {
         tileId = 0
         for(let i = 0;i < boardWidth;i++) {
             this.board[i] = []
+        }
+    },
+    addTiles : function(tiles) {
+        for(let t of tiles) {
+            this.addTile(t)
         }
     },
     addTile : function(tile) {
@@ -190,31 +196,32 @@ var scores = {
     },
     // find all possible places
     updateSolution(curType) {
-        let solutionBoard = []
+        this.solutionBoard = []
         for(let i = 0;i < boardWidth;i++) {
-            solutionBoard[i] = []
+            this.solutionBoard[i] = []
         }
         this.solutions = []
         for(let tile of tiles) {
             for(let c of connectRect) {
-                let ok = false
+                let rotates = []
                 let x = tile.x + c[0]
                 let y = tile.y + c[1]
-                if(solutionBoard[x][y]) {
+                if(this.solutionBoard[x][y]) {
                     continue
                 }
                 for(let rotate = 0;rotate < 4;rotate++) {
                     if(this.testPlace(x, y, curType, rotate)) {
-                        ok = true
-                        break
+                        rotates.push(rotate)
                     }
                 }
-                if(ok) {
-                    solutionBoard[x][y] = true
-                    this.solutions.push({
+                if(rotates.length != 0) {
+                    let so = {
                         x: x,
-                        y: y
-                    })
+                        y: y,
+                        rotates: rotates
+                    }
+                    this.solutionBoard[x][y] = so
+                    this.solutions.push(so)
                 }
             }
         }

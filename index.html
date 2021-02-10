@@ -5,12 +5,13 @@
 <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui, maximum-scale=1.0, user-scalable=0">
 <meta name="keywords" content="Parking,Game"/>
 <title>Carcassonne</title>
-<script src="score.js?i=3"></script>
-<script src="data.js?i=4"></script>
-<script src="carc.js?i=3"></script>
+<script src="score.js?i=1"></script>
+<script src="data.js?i=1"></script>
+<script src="carc.js?i=1"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/clipboard.js/2.0.6/clipboard.min.js"></script>
 <script src="https://libs.baidu.com/jquery/2.0.0/jquery.min.js"></script>
-<script src="https://libs.baidu.com/jqueryui/1.8.22/jquery-ui.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.js"></script>
+<link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
 <style>
     body, button, span {
         font-size: 32px;
@@ -23,11 +24,12 @@
         padding-top:5px;
     }
     button {
-        padding:10px;
+        padding:5px;
     }
     .score, .score span{
         font-size: 24px;
     }
+    .noTitleStuff .ui-dialog-titlebar {display:none}
 </style>
 </head>
 <body onselectstart="return false;">
@@ -40,10 +42,7 @@
             stack <span id="tilesLeft"></span><br/>
         </td></tr>
         <tr><td>
-            <button onclick="javascript:if(confirm('Are you sure?'))restart(2, true)">restart 2</button>
-        </td></tr>
-        <tr><td>
-            <button onclick="javascript:if(confirm('Are you sure?'))restart(3, true)">restart 3</button>
+            <button onclick="javascript:restartOption()">restart</button>
         </td></tr>
         <tr><td>
             <button onclick="javascript:edit()">edit</button><br/>
@@ -51,14 +50,20 @@
         <tr><td>
             <button onclick="javascript:rotateBackup()">rotate</button><br/>
         </td></tr>
-        <tr><td class="score">
+        <tr><td class="score" id="scorebox0">
             blue <span id="score0"></span> <span id="scorep0"></span><br/>
         </td></tr>
-        <tr><td class="score">
+        <tr><td class="score" id="scorebox1">
             red <span id="score1"></span> <span id="scorep1"></span><br/>
         </td></tr>
-        <tr><td class="score">
+        <tr><td class="score" id="scorebox2">
             green <span id="score2"></span> <span id="scorep2"></span><br/>
+        </td></tr>
+        <tr><td class="score" id="scorebox3">
+            yellow <span id="score3"></span> <span id="scorep3"></span><br/>
+        </td></tr>
+        <tr><td class="score" id="scorebox4">
+            black <span id="score4"></span> <span id="scorep4"></span><br/>
         </td></tr>
         <tr><td>
             <button id="btnPreviousGame" onclick="javascript:switchGame(-1)">&lt;&lt;</button>
@@ -67,11 +72,99 @@
         <tr><td>
             <button id="btnDelete" onclick="javascript:deleteTile()">delete</button>
         </td></tr>
+        <tr><td>
+            <button class="btn" onclick="javascript:copy()">copy</button>
+        </td></tr>
     </table>
+    <div id="dialogNumber" title="Choose Number">
+        <p>Choose Number</p>
+    </div>
+    <div id="dialogMode" title="Choose Mode">
+        <p>Choose Mode</p>
+    </div>
 </body>
 <script>
+    var selectedMode = 'classic';
+  $(function() {
+    $("#dialogNumber").dialog({
+        dialogClass: 'noTitleStuff',
+        autoOpen: false,
+        resizable: false,
+        draggable: false,
+        height: "auto",
+        width: 400,
+        modal: true,
+        buttons: {
+            "2 players": function() {
+                $( this ).dialog( "close" );
+                restart(2, true, selectedMode)
+            },
+            "3 players": function() {
+                $( this ).dialog( "close" );
+                restart(3, true, selectedMode)
+            },
+            "4 players": function() {
+                $( this ).dialog( "close" );
+                restart(4, true, selectedMode)
+            },
+            "5 players": function() {
+                $( this ).dialog( "close" );
+                restart(5, true, selectedMode)
+            },
+            Cancel: function() {
+                $( this ).dialog( "close" );
+            }
+        }
+    });
+    $("#dialogMode").dialog({
+        dialogClass: 'noTitleStuff',
+        autoOpen: false,
+        resizable: false,
+        draggable: false,
+        height: "auto",
+        width: 400,
+        modal: true,
+        buttons: {
+            "Classic": function() {
+                $( this ).dialog( "close" );
+                selectedMode = 'classic'
+                $( "#dialogNumber" ).dialog("open");
+            },
+            "River Expansion": function() {
+                $( this ).dialog( "close" );
+                selectedMode = 'river'
+                $( "#dialogNumber" ).dialog("open");
+            },
+            "River Expansion2": function() {
+                $( this ).dialog( "close" );
+                selectedMode = 'river2'
+                $( "#dialogNumber" ).dialog("open");
+            },
+            "George": function() {
+                $( this ).dialog( "close" );
+                selectedMode = 'george'
+                $( "#dialogNumber" ).dialog("open");
+            },
+            Cancel: function() {
+                $( this ).dialog( "close" );
+            }
+        }
+    });
+  });
+
+  function restartOption() {
+    $( "#dialogMode" ).dialog("open");
+  }
 
     init()
 
+    function copy() {
+        new ClipboardJS('.btn', {
+            text: function() {
+                let gameJson = localStorage.getItem("game"+gameId)
+                return gameJson
+            }
+        });
+    }
 </script>
 </html>

@@ -209,7 +209,7 @@ const tileTypes = [
 		]
 	},
 	{	// (21)	crossing		
-		count:	0,
+		count:	1,
 		connect : [road, road, road, road],
 		place: [
 			[0.5, 0.2, road, [0]],
@@ -441,6 +441,24 @@ const tileTypes = [
 		place: [
 			[0.2, 0.3, city, [0, 1]],
 			[0.7, 0.7, farm, [4,5,6,7], [0]],
+		]
+	},
+	{	// (45)			
+		count:	0,
+		connect : [river, river, river, river],
+		place: [
+			[0.15, 0.15, farm, [1, 2]],
+			[0.15, 0.85, farm, [3, 4]],
+			[0.85, 0.85, farm, [5, 6]],
+			[0.85, 0.15, farm, [7, 0]],
+		]
+	},
+	{	// (46)	lake + ?	
+		count:	1,
+		connect : [river, farm, river, farm],
+		place: [
+			[0.15, 0.5, farm, [1,2,3,4]],
+			[0.85, 0.5, farm, [0,5,6,7]],
 		]
 	},
 ]
