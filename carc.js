@@ -8,6 +8,7 @@ let curTile4Token
 let lastTile	// token can place here only
 let tokens
 let gameMode
+let beginTime	// begin time of this game
 
 function init(c, boardW, boardH, exitX, exitY) {
 	btnDelete.disabled = true
@@ -78,6 +79,7 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 
 	if(game) {
 		gameMode = game.mode || 'classic'
+		beginTime = game.beginTime
 		players = game.players.map(item => {
 			return {
 				id : item.id,
@@ -128,6 +130,7 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 		curPlayer = game.curPlayer
 	} else {
 		gameMode = mode
+		beginTime = new Date().toISOString()
 		players = []
 		let crossingTile = 21
 		for(let i = 0;i < playerNumber;i++) {
@@ -644,6 +647,7 @@ function saveGame() {
 		let game = {
 			id : gameId,
 			mode : gameMode,
+			beginTime : beginTime,
 			players : players.map(item => {
 				return {
 					id : item.id,
@@ -714,6 +718,11 @@ function switchGame(delta) {
 	gameId += delta
 	if(gameId < 0) {
 		gameId = 0
+	} else if(gameId > games.length) {	// no need to create more game if the last one is not yet started/saved
+		gameId = games.length
+	} 
+	if(gameId < games.length) {	// reset from local storage
+		games[gameId] = JSON.parse(localStorage.getItem("game"+gameId))
 	}
 	restart()
 	localStorage.setItem("gameId", gameId);
