@@ -129,7 +129,7 @@ const tileTypes = [
 		connect : [city, city, road, road],
 		star : true,
 		place: [
-			[0.2, 0.2, city, [0, 1]],
+			[0.3, 0.2, city, [0, 1]],
 			[0.5, 0.5, farm, [4,7], [0]],
 			[0.7, 0.7, road, [2, 3]],
 			[0.85, 0.85, farm, [5,6]],
@@ -302,10 +302,11 @@ const tileTypes = [
 	{	// (30)	lake		
 		count:	1,
 		connect : [river, river, city, city],
+		star : true,
 		place: [
 			[0.1, 0.1, farm, [1,2]],
 			[0.5, 0.5, farm, [0,3], [2]],
-			[0.85, 0.85, city, [2, 3]],
+			[0.80, 0.65, city, [2, 3]],
 		]
 	},
 	{	// (31)	lake		
