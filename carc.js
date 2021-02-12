@@ -336,10 +336,17 @@ function empty() {
 function drawAll(c) {
 	ctx.clearRect(0,0,canvas.width,canvas.height); 
 	if(!lastTile) {
-		ctx.fillStyle='#CCCCCC'
-		// draw all possible places
+		ctx.fillStyle='#E0E0F0'
+		// draw all possible places of this rotate
 		for(let so of scores.solutions) {
 			if(so.rotates.indexOf(curRotate) != -1) {
+				ctx.fillRect(grid * so.x + offsetX, grid * so.y + offsetY, grid, grid)
+			}
+		}
+		ctx.fillStyle='#EEEEEE'
+		// draw all possible places
+		for(let so of scores.solutions) {
+			if(so.rotates.indexOf(curRotate) == -1) {
 				ctx.fillRect(grid * so.x + offsetX, grid * so.y + offsetY, grid, grid)
 			}
 		}
