@@ -44,7 +44,7 @@ var scores = {
                 }
             }
         }
-
+        // create a new group or merge with former groups
         for(let [index, place] of places.entries()) {
             if(place[2] == cloister) {
                 let sum = 0     // tiles around cloister
@@ -77,15 +77,28 @@ var scores = {
                                 group.unfinished += group2.unfinished
                                 group.tokens = group.tokens.concat(group2.tokens)
                                 group.members = group.members.concat(group2.members)
+                                if(group2.inn) {
+                                    group.inn = true
+                                }
+                                if(group2.cathedral) {
+                                    group.cathedral = true
+                                }
                                 for(let item of group2.members) {
                                     item.tile.groups[item.index] = group
                                 }
                             }
                         } else {
+                            // merge one group
                             group = group2
                             tile.groups[index] = group2
                             group.members.push({tile : tile, index : index})
                             group.unfinished++
+                            if(place.inn) {
+                                group.inn = true
+                            }
+                            if(place.cathedral) {
+                                group.cathedral = true
+                            }
                         }
                     }
                 }
@@ -94,11 +107,18 @@ var scores = {
                         group.unfinished--
                     }
                 } else {
-                    tile.groups[index] = {
+                    // create a new group
+                    tile.groups[index] = group = {
                         type : place[2],
                         unfinished : 1,
                         members : [{tile : tile, index : index}],
                         tokens : []
+                    }
+                    if(place.inn) {
+                        group.inn = true
+                    }
+                    if(place.cathedral) {
+                        group.cathedral = true
                     }
                 }
             } else if(place[2] == farm) {
@@ -166,17 +186,29 @@ var scores = {
                 let number = new Set(members.map(x => x.tile.id)).size
                 let addScore;
                 if(token.type == road) {
-                    addScore = number
+                    if(group.inn) {
+                        addScore = number * 2
+                    } else {
+                        addScore = number
+                    }
                 } else if(token.type == city) {
                     if(number == 2) {
-                        addScore = number
+                        if(group.cathedral) {
+                            addScore = number * 2
+                        } else {
+                            addScore = number
+                        }
                     } else {
-                        addScore = number * 2
                         for(let m of members) {
                             let place = m.tile.type.place[m.index]
                             if(place.flag) {
-                                addScore += 2
+                                number++
                             }
+                        }
+                        if(group.cathedral) {
+                            addScore = number * 3
+                        } else {
+                            addScore = number * 2
                         }
                     }
                 }
@@ -291,14 +323,18 @@ var scores = {
             let number = new Set(members.map(x => x.tile.id)).size
             let addScore = 0;
             if(token.type == road) {
-                addScore = number
+                if(!group.inn) {
+                    addScore = number
+                }
             } else if(token.type == city) {
-                addScore = number
                 for(let m of members) {
                     let place = m.tile.type.place[m.index]
                     if(place.flag) {
-                        addScore++
+                        number++
                     }
+                }
+                if(!group.cathedral) {
+                    addScore = number
                 }
             } else if(token.type == farm) {
                 let citys = new Set()   // add group here
