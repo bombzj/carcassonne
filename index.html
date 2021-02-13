@@ -14,7 +14,7 @@
 <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/jqueryui/1.12.1/jquery-ui.min.css">
 <style>
     body, button, span {
-        font-size: 32px;
+        font-size: 24px;
         touch-action: manipulation;
     }
     body,html {
@@ -29,7 +29,12 @@
     .score, .score span{
         font-size: 24px;
     }
-    .noTitleStuff .ui-dialog-titlebar {display:none}
+    .noTitleStuff .ui-dialog-titlebar {
+        display:none;
+    }
+    .dialog button {
+        font-size: 24px;
+    }
 </style>
 </head>
 <body onselectstart="return false;">
@@ -76,10 +81,10 @@
             <button class="btn" onclick="javascript:copy()">copy</button>
         </td></tr>
     </table>
-    <div id="dialogNumber" title="Choose Number">
+    <div id="dialogNumber" title="Choose Number" class="dialog">
         <p>Choose Number</p>
     </div>
-    <div id="dialogMode" title="Choose Mode">
+    <div id="dialogMode" title="Choose Mode" class="dialog">
         <p>Choose Mode</p>
     </div>
 </body>
@@ -128,6 +133,11 @@
             "Classic": function() {
                 $( this ).dialog( "close" );
                 selectedMode = 'classic'
+                $( "#dialogNumber" ).dialog("open");
+            },
+            "Inns and Cathedrals": function() {
+                $( this ).dialog( "close" );
+                selectedMode = 'inn'
                 $( "#dialogNumber" ).dialog("open");
             },
             "River Expansion": function() {

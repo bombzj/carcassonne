@@ -173,7 +173,8 @@ var scores = {
                     } else {
                         addScore = number * 2
                         for(let m of members) {
-                            if(m.tile.type.star) {
+                            let place = m.tile.type.place[m.index]
+                            if(place.flag) {
                                 addScore += 2
                             }
                         }
@@ -294,7 +295,8 @@ var scores = {
             } else if(token.type == city) {
                 addScore = number
                 for(let m of members) {
-                    if(m.tile.type.star) {
+                    let place = m.tile.type.place[m.index]
+                    if(place.flag) {
                         addScore++
                     }
                 }
@@ -330,6 +332,19 @@ var scores = {
             type.roadCityConnect = [];
             type.farmConnect = [];
             for(let [index, place] of type.place.entries()) {
+                place.x = place[0]  // convert array data to object variables
+                place.y = place[1]
+                if(place[5]) {
+                    for(let star of place[5]) {
+                        if(star == starFlag) {
+                            place.flag = true
+                        } else if(star == starInn) {
+                            place.inn = true
+                        } else if(star == starCathedral) {
+                            place.cathedral = true
+                        }
+                    }
+                }
                 if(place[2] == cloister) {
                     type.cloisterIndex = index
                 }

@@ -143,7 +143,7 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 				},)
 		}
 		let initTile
-		if(gameMode == 'classic') {
+		if(gameMode == 'classic' || gameMode == 'inn') {
 			initTile = {
 				x : boardWidth / 2,
 				y : boardWidth / 2,
@@ -208,7 +208,13 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 				}
 			}
 		}
-		if(gameMode == 'river') {
+		if(gameMode == 'inn') {
+			others = others.filter(item => {
+				return tileTypes[item].exp == expInn
+			})
+			shuffle(others)
+			tileStack = others
+		} else if(gameMode == 'river') {
 			rivers = [2, 3, 6, 7, 29, 30, 31, 32, 33, 34]
 			shuffle(rivers)
 			others.push(crossingTile)
@@ -356,6 +362,8 @@ function drawAll(c) {
 	}
 	for(let tile of tiles) {
 		draw(tile.type.id, grid * tile.x + offsetX, grid * tile.y + offsetY, grid, grid, tile.rotate)
+	}
+	for(let tile of tiles) {
 		if(tile.tokens) {
 			let place = tile.type.place
 			for(let [index, token] of tile.tokens.entries()) {
@@ -620,11 +628,12 @@ function touchend(ex, ey) {
 				tileStack.shift()
 				tilesLeft.innerHTML = tileStack.length
 				lastTile = curTile
-				if(players[curPlayer].token == 0) {
-					next()
-				} else {
-					btnNext.disabled = false
-				}
+				// if(players[curPlayer].token == 0) {
+				// 	next()
+				// } else {
+				// 	btnNext.disabled = false
+				// }
+				btnNext.disabled = false
 			} else {
 				saveGame()
 			}
