@@ -7,10 +7,16 @@ const cloister = 4
 const starFlag = 1		// flag on a city
 const starInn = 2		// inn on a road
 const starCathedral = 3		// cathedrall in a city
+const starWine = 10		// goods wine in a city
+const starGrain = 11		// goods grain in a city
+const starCloth = 12		// goods cloth in a city
 
 const expInn = 1
 const expRiver = 2
 const expRiver2 = 3
+const expTrader = 4
+const expGeorge = 9999
+const expTest = 10000
 
 const allColors = [
 	'blue', 'red', 'green', 'yellow', 'black'
@@ -540,9 +546,9 @@ const tileTypes = [
 		exp : expInn,
 		place: [
 			[0.8, 0.2, city, [0,3]],
-			[0.2, 0.6, farm, [2,3,4], [0]],
-			[0.8, 0.9, farm, [5], [0]],
-			[0.5, 0.7, road, [2]],
+			[0.15, 0.6, farm, [2,3,4], [0]],
+			[0.75, 0.9, farm, [5], [0]],
+			[0.45, 0.7, road, [2]],
 		]
 	},
 	{	// (52)			
@@ -608,6 +614,280 @@ const tileTypes = [
 			[0.8, 0.87, farm, [5], [1]],
 			[0.5, 0.1, road, [0]],
 			[0.5, 0.9, road, [2]],
+		]
+	},
+	{	// (58)			
+		count:	1,
+		connect : [farm, road, road, road],
+		exp : expTrader,
+		place: [
+			[0.5, 0.2, farm, [0,1,2,7]],
+			[0.2, 0.8, farm, [3,4]],
+			[0.8, 0.8, farm, [5,6]],
+			[0.15, 0.5, road, [1]],
+			[0.85, 0.5, road, [3]],
+			[0.5, 0.8, road, [2]],
+			[0.5, 0.5, cloister, []],
+		]
+	},
+	{	// (59)			
+		count:	1,
+		connect : [city, farm, farm, road],
+		exp : expTrader,
+		place: [
+			[0.5, 0.2, city, [0]],
+			[0.25, 0.7, farm, [2,3,4,5,6], [0]],
+			[0.6, 0.55, road, [3]],
+			[0.85, 0.3, farm, [7]],
+		]
+	},
+	{	// (60)			
+		count:	1,
+		connect : [city, road, road, farm],
+		exp : expTrader,
+		place: [
+			[0.5, 0.15, city, [0]],
+			[0.2, 0.8, farm, [2,3,4], [0]],
+			[0.8, 0.8, farm, [5,6,7], [0]],
+			[0.5, 0.8, road, [2]],
+			[0.2, 0.5, road, [1]],
+		]
+	},
+	{	// (61)	
+		count:	1,
+		connect : [road, road, road, road],
+		exp : expTrader,
+		place: [
+			[0.15, 0.8, farm, [1,2,3,4]],
+			[0.85, 0.8, farm, [0,5,6,7]],
+			[0.5, 0.2, road, [0, 2]],
+			[0.2, 0.5, road, [1, 3]],
+		]
+	},
+	{	// (62)			
+		count:	1,
+		connect : [farm, city, city, city],
+		exp : expTrader,
+		place: [
+			[0.5, 0.05, farm, [0,1], [1]],
+			[0.5, 0.4, city, [1, 3], [], [starCloth]],
+			[0.75, 0.75, farm, [], [1,3]],
+			[0.5, 0.9, city, [2]],
+		]
+	},
+	{	// (63)			
+		count:	1,
+		connect : [city, city, city, city],
+		exp : expTrader,
+		place: [
+			[0.4, 0.2, city, [0, 1], [], [starCloth]],
+			[0.55, 0.55, farm, [], [0,2,3]],
+			[0.5, 0.85, city, [2]],
+			[0.9, 0.5, city, [3]],
+		]
+	},
+	{	// (64)			
+		count:	1,
+		connect : [city, city, city, road],
+		exp : expTrader,
+		place: [
+			[0.5, 0.2, city, [0, 1], [], [starCloth]],
+			[0.9, 0.7, farm, [6], [0,2]],
+			[0.5, 0.85, city, [2]],
+			[0.67, 0.52, road, [3]],
+			[0.9, 0.3, farm, [7], [0,2]],
+		]
+	},
+	{	// (65)			
+		count:	1,
+		connect : [city, farm, road, city],
+		exp : expTrader,
+		place: [
+			[0.8, 0.2, city, [0,3], [], [starCloth]],
+			[0.15, 0.6, farm, [2,3,4], [0]],
+			[0.75, 0.9, farm, [5], [0]],
+			[0.45, 0.7, road, [2]],
+		]
+	},
+	{	// (66)			
+		count:	1,
+		connect : [city, city, road, road],
+		exp : expTrader,
+		place: [
+			[0.2, 0.87, farm, [4], [1]],
+			[0.4, 0.4, city, [0, 1], [], [starCloth]],
+			[0.7, 0.87, farm, [5], [1]],
+			[0.9, 0.7, farm, [6], [1]],
+			[0.9, 0.2, farm, [7], [1]],
+			[0.45, 0.9, road, [2]],
+			[0.9, 0.45, road, [3]],
+		]
+	},
+	{	// (67)			
+		count:	1,
+		connect : [city, city, city, road],
+		exp : expTrader,
+		place: [
+			[0.5, 0.2, city, [0, 1], [], [starGrain]],
+			[0.9, 0.7, farm, [6], [0,2]],
+			[0.5, 0.85, city, [2]],
+			[0.67, 0.52, road, [3]],
+			[0.9, 0.3, farm, [7], [0,2]],
+		]
+	},
+	{	// (68)			
+		count:	1,
+		connect : [city, city, road, farm],
+		exp : expTrader,
+		place: [
+			[0.2, 0.87, farm, [4], [1]],
+			[0.4, 0.4, city, [0, 1], [], [starGrain]],
+			[0.7, 0.87, farm, [5], [1]],
+			[0.9, 0.5, farm, [6,7], [1]],
+			[0.45, 0.9, road, [2]],
+		]
+	},
+	{	// (69)			
+		count:	1,
+		connect : [city, city, farm, city],
+		exp : expTrader,
+		place: [
+			[0.5, 0.3, city, [0, 1, 3], [], [starGrain]],
+			[0.5, 0.85, farm, [4,5], [0]],
+		]
+	},
+	{	// (70)			
+		count:	1,
+		connect : [city, city, farm, farm],
+		exp : expTrader,
+		place: [
+			[0.2, 0.3, city, [0, 1], [], [starGrain]],
+			[0.7, 0.7, farm, [4,5,6,7], [0]],
+		]
+	},
+	{	// (71)			
+		count:	1,
+		connect : [city, city, road, farm],
+		exp : expTrader,
+		place: [
+			[0.2, 0.2, city, [0,1], [], [starGrain]],
+			[0.2, 0.85, farm, [4], [0]],
+			[0.8, 0.6, farm, [5,6,7], [0]],
+			[0.5, 0.8, road, [2]],
+		]
+	},
+	{	// (72)			
+		count:	1,
+		connect : [farm, city, road, city],
+		exp : expTrader,
+		place: [
+			[0.5, 0.05, farm, [0,1], [1]],
+			[0.5, 0.4, city, [1, 3], [], [starGrain]],
+			[0.2, 0.87, farm, [4], [1]],
+			[0.8, 0.87, farm, [5], [1]],
+			[0.5, 0.9, road, [2]],
+		]
+	},
+	{	// (73)			
+		count:	1,
+		connect : [city, city, farm, road],
+		exp : expTrader,
+		place: [
+			[0.5, 0.87, farm, [4,5], [1]],
+			[0.4, 0.4, city, [0, 1], [], [starWine]],
+			[0.9, 0.7, farm, [6], [1]],
+			[0.9, 0.2, farm, [7], [1]],
+			[0.9, 0.45, road, [3]],
+		]
+	},
+	{	// (74)			
+		count:	1,
+		connect : [city, city, road, city],
+		exp : expTrader,
+		place: [
+			[0.5, 0.3, city, [0, 1, 3], [], [starWine]],
+			[0.25, 0.85, farm, [4], [0]],
+			[0.5, 0.8, road, [2]],
+			[0.75, 0.85, farm, [5], [0]],
+		]
+	},
+	{	// (75)			
+		count:	1,
+		connect : [city, city, road, road],
+		exp : expTrader,
+		place: [
+			[0.2, 0.2, city, [0,1], [], [starWine]],
+			[0.2, 0.85, farm, [4], [0]],
+			[0.8, 0.8, farm, [5,6], [0]],
+			[0.5, 0.8, road, [2]],
+			[0.9, 0.25, farm, [7], [0]],
+			[0.9, 0.5, road, [3]],
+		]
+	},
+	{	// (76)			
+		count:	1,
+		connect : [city, city, farm, farm],
+		exp : expTrader,
+		place: [
+			[0.2, 0.3, city, [0, 1], [], [starWine]],
+			[0.7, 0.7, farm, [4,5,6,7], [0]],
+		]
+	},
+	{	// (77)			
+		count:	1,
+		connect : [farm, city, road, city],
+		exp : expTrader,
+		place: [
+			[0.5, 0.05, farm, [0,1], [1]],
+			[0.5, 0.4, city, [1, 3], [], [starWine]],
+			[0.2, 0.87, farm, [4], [1]],
+			[0.8, 0.87, farm, [5], [1]],
+			[0.5, 0.9, road, [2]],
+		]
+	},
+	{	// (78)			
+		count:	1,
+		connect : [road, city, road, city],
+		exp : expTrader,
+		place: [
+			[0.2, 0.05, farm, [0], [1]],
+			[0.5, 0.4, city, [1, 3], [], [starWine]],
+			[0.8, 0.05, farm, [1], [1]],
+			[0.2, 0.87, farm, [4], [1]],
+			[0.8, 0.87, farm, [5], [1]],
+			[0.5, 0.1, road, [0]],
+			[0.5, 0.9, road, [2]],
+		]
+	},
+	{	// (79)			
+		count:	1,
+		connect : [farm, city, farm, city],
+		exp : expTrader,
+		place: [
+			[0.5, 0.05, farm, [0,1], [1]],
+			[0.5, 0.4, city, [1, 3], [], [starWine]],
+			[0.5, 0.87, farm, [4,5], [1]],
+		]
+	},
+	{	// (80)			
+		count:	1,
+		connect : [farm, city, city, city],
+		exp : expTrader,
+		place: [
+			[0.5, 0.05, farm, [0,1], [1]],
+			[0.5, 0.4, city, [1, 3], [], [starWine]],
+			[0.75, 0.75, farm, [], [1,3]],
+			[0.5, 0.9, city, [2]],
+		]
+	},
+	{	// (81)			
+		count:	1,
+		connect : [city, city, city, city],
+		exp : expTrader,
+		place: [
+			[0.4, 0.2, city, [0, 1], [], [starWine]],
+			[0.55, 0.55, farm, [], [0,2]],
+			[0.85, 0.85, city, [2, 3]],
 		]
 	},
 ]

@@ -10,19 +10,19 @@ let tokens
 let gameMode
 let beginTime	// begin time of this game
 
-function init(c, boardW, boardH, exitX, exitY) {
+function init() {
 	btnDelete.disabled = true
 	scores.initTileType()
 	ctx = canvas.getContext("2d")
 	let files = []
 	for(let [index, item] of tileTypes.entries()) {
-		files.push(index)
+		files.push(index + '.png')
 		item.id = index
 		let connect = item.connect
 		item.isRiver = connect[0] == river || connect[1] == river || connect[2] == river || connect[3] == river	// river must connect to river
 	}
 	for(let c of allColors) {
-		files.push(c)
+		files.push(c + '.png')
 	}
 	loadImages(files, () => {
 		drawAll()
@@ -143,43 +143,28 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 				},)
 		}
 		let initTile
-		if(gameMode == 'classic' || gameMode == 'inn') {
-			initTile = {
-				x : boardWidth / 2,
-				y : boardWidth / 2,
-				type : tileTypes[21], 
-				rotate : 2
-			}
+		let initX = boardWidth / 2
+		let initY = boardWidth / 2
+		if(gameMode == 'classic' || gameMode == 'inn' || gameMode == 'trader' ) {
+			initTile = newTile(initX, initY, 21, 2)
 		} else if(gameMode == 'river') {
-			initTile = {
-				x : boardWidth / 2,
-				y : boardWidth / 2,
-				type : tileTypes[14], 
-				rotate : 2
-			}
+			initTile = newTile(initX, initY, 14, 2)
 		} else if(gameMode == 'river2') {
-			initTile = {
-				x : boardWidth / 2,
-				y : boardWidth / 2,
-				type : tileTypes[14], 
-				rotate : 2
-			}
+			initTile = newTile(initX, initY, 14, 2)
 		}
 		tiles = [ initTile ]
 		if(gameMode == 'george') {
-			initTile = {
-				x : boardWidth / 2,
-				y : boardWidth / 2,
-				type : tileTypes[14], 
-				rotate : 2
-			}
-			let initTile2 = {
-				x : boardWidth / 2 + 1,
-				y : boardWidth / 2 - 1,
-				type : tileTypes[14], 
-				rotate : 3
-			}
+			initTile = newTile(initX, initY, 14, 2)
+			let initTile2 = newTile(initX+1, initY-1, 14, 3)
 			tiles = [ initTile, initTile2 ]
+		} else if(gameMode == 'test') {
+			tiles = [
+				newTile(initX, initY, 14, 2), 
+				newTile(initX+1, initY, 6, 1), 
+				newTile(initX+2, initY, 7, 1), 
+				newTile(initX+3, initY, 30, 0), 
+				newTile(initX+3, initY-1, 1, 3), 
+			]
 		}
 		scores.addTiles(tiles)
 		curPlayer = 0
@@ -211,6 +196,12 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 		if(gameMode == 'inn') {
 			others = others.filter(item => {
 				return tileTypes[item].exp == expInn
+			})
+			shuffle(others)
+			tileStack = others
+		} else if(gameMode == 'trader') {
+			others = others.filter(item => {
+				return tileTypes[item].exp == expTrader
 			})
 			shuffle(others)
 			tileStack = others
@@ -255,6 +246,15 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 	drawAll()
 
 	checkFinish()
+}
+
+function newTile(x, y, tileId, rotate) {
+	return {
+		x : x,
+		y : y,
+		type : tileTypes[tileId], 
+		rotate : rotate
+	}
 }
 
 function checkFinish() {
@@ -463,6 +463,7 @@ function drawBackup() {
 	let startY = 0
 	let w = 0.5
 	if(editMode) {
+		startX = backupStartX - 1.5
 		for(let [index, tileType] of tileTypes.entries()) {
 			draw(index, grid * startX, grid * startY, grid*w, grid*w, curRotate)
 			tileType.position = [startX, startY, w, w];	// TODO: should be one time job
@@ -712,14 +713,15 @@ function loadImages(sources, callback){
 		imgNum++
 	}
 	for(let src of sources){
-		images[src] = new Image(src);
-		images[src].onload = images[src].onerror = function(){
+		let name = src.split('.')[0]
+		images[name] = new Image(src);
+		images[name].onload = images[name].onerror = function(){
 			if(++count >= imgNum){
 				callback(images)
 			}
 		};
 
-		images[src].src = 'res/' + src + '.png'
+		images[name].src = 'res/' + src
 	}
 }
 

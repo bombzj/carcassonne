@@ -140,6 +140,11 @@
                 selectedMode = 'inn'
                 $( "#dialogNumber" ).dialog("open");
             },
+            "Traders & Builders": function() {
+                $( this ).dialog( "close" );
+                selectedMode = 'trader'
+                $( "#dialogNumber" ).dialog("open");
+            },
             "River Expansion": function() {
                 $( this ).dialog( "close" );
                 selectedMode = 'river'
@@ -153,6 +158,11 @@
             "George": function() {
                 $( this ).dialog( "close" );
                 selectedMode = 'george'
+                $( "#dialogNumber" ).dialog("open");
+            },
+            "Test": function() {
+                $( this ).dialog( "close" );
+                selectedMode = 'test'
                 $( "#dialogNumber" ).dialog("open");
             },
             Cancel: function() {
