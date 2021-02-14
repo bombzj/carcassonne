@@ -53,7 +53,7 @@ const tileTypes = [
 		]
 	},
 	{	// (3)	lake		
-		count:	1,
+		count:	2,
 		connect : [farm, river, river, farm],
 		exp : expRiver,
 		place: [
@@ -359,7 +359,7 @@ const tileTypes = [
 	{	// (34)	lake		
 		count:	1,
 		connect : [river, farm, farm, river],
-		exp : expRiver,
+		exp : expRiver2,
 		place: [
 			[0.3, 0.6, farm, [1,2,3,4,5,6]],
 			[0.9, 0.1, farm, [0,7]],
@@ -500,7 +500,7 @@ const tileTypes = [
 		connect : [farm, farm, road, road],
 		exp : expInn,
 		place: [
-			[0.3, 0.3, farm, [0,1,2,3,4,7]],
+			[0.2, 0.2, farm, [0,1,2,3,4,7]],
 			[0.5, 0.5, road, [2, 3], [], [starInn]],
 			[0.8, 0.8, farm, [5,6]],
 		]
@@ -888,6 +888,61 @@ const tileTypes = [
 			[0.4, 0.2, city, [0, 1], [], [starWine]],
 			[0.55, 0.55, farm, [], [0,2]],
 			[0.85, 0.85, city, [2, 3]],
+		]
+	},
+	{	// (82)	lake		
+		count:	1,
+		connect : [farm, river, river, farm],
+		exp : expRiver2,
+		place: [
+			[0.75, 0.3, farm, [0, 1, 2, 5, 6, 7]],
+			[0.1, 0.85, farm, [3, 4]],
+		]
+	},
+	{	// (83)	lake		
+		count:	1,
+		connect : [river, river, city, city],
+		exp : expRiver2,
+		place: [
+			[0.1, 0.1, farm, [1,2]],
+			[0.5, 0.5, farm, [0,3], [2]],
+			[0.80, 0.65, city, [2, 3]],
+		]
+	},
+	{	// (84)	lake		
+		count:	1,
+		connect : [road, river, river, road],
+		exp : expRiver2,
+		place: [
+			[0.15, 0.85, farm, [3,4]],
+			[0.3, 0.2, farm, [1,2,5,6]],
+			[0.7, 0.3, road, [0, 3]],
+			[0.85, 0.15, farm, [0,7]],
+		]
+	},
+	{	// (85)	lake		
+		count:	1,
+		connect : [river, road, river, road],
+		exp : expRiver2,
+		place: [
+			[0.2, 0.2, farm, [1,2]],
+			[0.8, 0.2, farm, [0,7]],
+			[0.5, 0.5, road, [1, 3]],
+			[0.25, 0.75, farm, [3,4]],
+			[0.8, 0.75, farm, [5,6]],
+		]
+	},
+	{	// (86)	lake		
+		count:	1,
+		connect : [river, city, river, road],
+		exp : expRiver2,
+		place: [
+			[0.28, 0.15, farm, [1], [2]],
+			[0.85, 0.2, farm, [0,7]],
+			[0.15, 0.5, city, [1]],
+			[0.5, 0.5, road, [3]],
+			[0.3, 0.8, farm, [4], [2]],
+			[0.8, 0.8, farm, [5,6]],
 		]
 	},
 ]

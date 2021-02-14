@@ -9,6 +9,7 @@ let lastTile	// token can place here only
 let tokens
 let gameMode
 let beginTime	// begin time of this game
+let gameExps
 
 function init() {
 	btnDelete.disabled = true
@@ -78,7 +79,7 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 	curRotate = 0
 
 	if(game) {
-		gameMode = game.mode || 'classic'
+		setMode(game.mode || 'classic')
 		beginTime = game.beginTime
 		players = game.players.map(item => {
 			return {
@@ -129,7 +130,7 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 		tileStack = game.stack
 		curPlayer = game.curPlayer
 	} else {
-		gameMode = mode
+		setMode(mode)
 		beginTime = new Date().toISOString()
 		players = []
 		let crossingTile = 21
@@ -142,90 +143,90 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 					score2: 0
 				},)
 		}
-		let initTile
+
 		let initX = boardWidth / 2
 		let initY = boardWidth / 2
-		if(gameMode == 'classic' || gameMode == 'inn' || gameMode == 'trader' ) {
-			initTile = newTile(initX, initY, 21, 2)
-		} else if(gameMode == 'river') {
-			initTile = newTile(initX, initY, 14, 2)
-		} else if(gameMode == 'river2') {
-			initTile = newTile(initX, initY, 14, 2)
-		}
-		tiles = [ initTile ]
-		if(gameMode == 'george') {
-			initTile = newTile(initX, initY, 14, 2)
-			let initTile2 = newTile(initX+1, initY-1, 14, 3)
-			tiles = [ initTile, initTile2 ]
-		} else if(gameMode == 'test') {
+		if(gameExps.george) {
+			tiles = [
+				newTile(initX, initY, 14, 2),
+				newTile(initX+1, initY-1, 14, 3)
+			]
+		} else if(gameExps.test) {
 			tiles = [
 				newTile(initX, initY, 14, 2), 
 				newTile(initX+1, initY, 6, 1), 
 				newTile(initX+2, initY, 7, 1), 
 				newTile(initX+3, initY, 30, 0), 
-				newTile(initX+3, initY-1, 1, 3), 
 			]
+		} else if(gameExps.river || gameExps.river2) {
+			tiles = [newTile(initX, initY, 14, 2)]
+		} else {
+			tiles = [newTile(initX, initY, 21, 2)]
 		}
+		
 		scores.addTiles(tiles)
 		curPlayer = 0
 
 		tileStack = []
 		tokens = []
-		let start, end
+		let riverStart, riverEnd
 		let rivers = []
+		let beforeRiver = []
+		let afterRiver = []
 		let others = []
+		let basicTiles = []
+		let innTiles = []
+		let traderTiles = []
+		let riverTiles = []
+		let river2Tiles = []
 		for(let tile of tileTypes) {
 			if(tile.riverStart) {
-				start = tile.id
+				riverStart = tile.id
 			} else if(tile.riverEnd) {
-				end = tile.id
+				riverEnd = tile.id
 			} else if(tile.id == crossingTile) {
 				// start for classic version
 			} else {
-				if(tile.isRiver) {
-					for(let i = 0;i < tile.count;i++) {
-						rivers.push(tile.id)
-					}
-				} else {
-					for(let i = 0;i < tile.count;i++) {
-						others.push(tile.id)
+				for(let i = 0;i < tile.count;i++) {
+					if(tile.exp == expRiver) {
+						riverTiles.push(tile.id)
+					} else if(tile.exp == expRiver2) {
+						river2Tiles.push(tile.id)
+					} else if(tile.exp == expInn) {
+						innTiles.push(tile.id)
+					} else if(tile.exp == expTrader) {
+						traderTiles.push(tile.id)
+					} else {
+						basicTiles.push(tile.id)
 					}
 				}
 			}
 		}
-		if(gameMode == 'inn') {
-			others = others.filter(item => {
-				return tileTypes[item].exp == expInn
-			})
-			shuffle(others)
-			tileStack = others
-		} else if(gameMode == 'trader') {
-			others = others.filter(item => {
-				return tileTypes[item].exp == expTrader
-			})
-			shuffle(others)
-			tileStack = others
-		} else if(gameMode == 'river') {
-			rivers = [2, 3, 6, 7, 29, 30, 31, 32, 33, 34]
-			shuffle(rivers)
-			others.push(crossingTile)
-			shuffle(others)
-			tileStack = rivers.concat(end, others)
-		} else if(gameMode == 'river2') {
-			rivers = [3, 6, 7, 30, 32, 34, 35, 37, 46]
-			shuffle(rivers)
-			others.push(crossingTile)
-			shuffle(others)
-			tileStack = [36].concat(rivers, end, others)
-		} else if(gameMode == 'george') {
-			shuffle(rivers)
-			others.push(crossingTile)
-			shuffle(others)
-			tileStack = [45].concat(rivers, end, others)
-		} else {	// classic
-			shuffle(others)
-			tileStack = others
+		if(gameExps.inn) {
+			others = others.concat(innTiles)
 		}
+		if(gameExps.trader) {
+			others = others.concat(traderTiles)
+		}
+		if(gameExps.classic) {
+			others = others.concat(basicTiles)
+		}
+		if(gameExps.river) {
+			rivers = rivers.concat(riverTiles)
+			afterRiver = [riverEnd]
+		}
+		if(gameExps.river2) {
+			rivers = rivers.concat(river2Tiles)
+			afterRiver = [riverEnd]
+			beforeRiver = [36]
+		}
+		if(gameExps.george) {
+			beforeRiver = [45]
+		}
+
+		shuffle(rivers)
+		shuffle(others)
+		tileStack = tileStack.concat(beforeRiver, rivers, afterRiver, others)
 		
 		offsetX = -grid * (boardWidth / 2 - 2)
 		offsetY = -grid * (boardWidth / 2 - 3)
@@ -246,6 +247,14 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 	drawAll()
 
 	checkFinish()
+}
+
+function setMode(mode) {
+	gameMode = mode
+	gameExps = {}
+	for(let m of mode.split('|')) {
+		gameExps[m] = true
+	}
 }
 
 function newTile(x, y, tileId, rotate) {
@@ -344,7 +353,7 @@ function empty() {
 
 function drawAll(c) {
 	ctx.clearRect(0,0,canvas.width,canvas.height); 
-	if(!lastTile) {
+	if(!lastTile && !editMode) {
 		ctx.fillStyle='#E0E0F0'
 		// draw all possible places of this rotate
 		for(let so of scores.solutions) {

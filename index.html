@@ -85,12 +85,41 @@
         <p>Choose Number</p>
     </div>
     <div id="dialogMode" title="Choose Mode" class="dialog">
-        <p>Choose Mode</p>
+        <p>
+            <label for="c1">Classic</label>
+            <input type="checkbox" id="c1" name="gmode" value="classic" checked="checked">
+        </p>
+        <p>
+            <label for="c2">Inns and Cathedrals</label>
+            <input type="checkbox" id="c2" name="gmode" value="inn">
+        </p>
+        <p>
+            <label for="c3">Traders & Builders</label>
+            <input type="checkbox" id="c3" name="gmode" value="trader">
+        </p>
+        <p>
+            <label for="c4">The River</label>
+            <input type="checkbox" id="c4" name="gmode" value="river">
+        </p>
+        <p>
+            <label for="c5">The River II</label>
+            <input type="checkbox" id="c5" name="gmode" value="river2">
+        </p>
+        <p>
+            <label for="c6">George</label>
+            <input type="checkbox" id="c6" name="gmode" value="george">
+        </p>
+        <p>
+            <label for="c7">Test</label>
+            <input type="checkbox" id="c7" name="gmode" value="test">
+        </p>
     </div>
 </body>
 <script>
     var selectedMode = 'classic';
   $(function() {
+    $("input").checkboxradio();
+
     $("#dialogNumber").dialog({
         dialogClass: 'noTitleStuff',
         autoOpen: false,
@@ -130,39 +159,13 @@
         width: 400,
         modal: true,
         buttons: {
-            "Classic": function() {
+            "Confirm": function() {
                 $( this ).dialog( "close" );
-                selectedMode = 'classic'
-                $( "#dialogNumber" ).dialog("open");
-            },
-            "Inns and Cathedrals": function() {
-                $( this ).dialog( "close" );
-                selectedMode = 'inn'
-                $( "#dialogNumber" ).dialog("open");
-            },
-            "Traders & Builders": function() {
-                $( this ).dialog( "close" );
-                selectedMode = 'trader'
-                $( "#dialogNumber" ).dialog("open");
-            },
-            "River Expansion": function() {
-                $( this ).dialog( "close" );
-                selectedMode = 'river'
-                $( "#dialogNumber" ).dialog("open");
-            },
-            "River Expansion2": function() {
-                $( this ).dialog( "close" );
-                selectedMode = 'river2'
-                $( "#dialogNumber" ).dialog("open");
-            },
-            "George": function() {
-                $( this ).dialog( "close" );
-                selectedMode = 'george'
-                $( "#dialogNumber" ).dialog("open");
-            },
-            "Test": function() {
-                $( this ).dialog( "close" );
-                selectedMode = 'test'
+                let modes = [];
+                $("input:checkbox[name='gmode']:checked").each(function(){
+                    modes.push($(this).val());
+                });
+                selectedMode = modes.join('|')
                 $( "#dialogNumber" ).dialog("open");
             },
             Cancel: function() {
