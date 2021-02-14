@@ -241,7 +241,7 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 		document.getElementById("scorep"  + i).innerHTML = ""
 		document.getElementById("scorebox" + i).style.display = ''
 	}
-	for(let i = players.length;i < 5;i++) {
+	for(let i = players.length;i < allColors.length;i++) {
 		document.getElementById("scorebox" + i).style.display = 'none'
 	}
 	drawAll()

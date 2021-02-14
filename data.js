@@ -19,7 +19,7 @@ const expGeorge = 9999
 const expTest = 10000
 
 const allColors = [
-	'blue', 'red', 'green', 'yellow', 'black'
+	'blue', 'red', 'green', 'yellow', 'black', 'pink'
 ]
 
 const tileTypes = [
@@ -927,7 +927,7 @@ const tileTypes = [
 		place: [
 			[0.2, 0.2, farm, [1,2]],
 			[0.8, 0.2, farm, [0,7]],
-			[0.5, 0.5, road, [1, 3]],
+			[0.5, 0.5, road, [1, 3], [], [starInn]],
 			[0.25, 0.75, farm, [3,4]],
 			[0.8, 0.75, farm, [5,6]],
 		]

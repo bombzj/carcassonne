@@ -70,6 +70,9 @@
         <tr><td class="score" id="scorebox4">
             black <span id="score4"></span> <span id="scorep4"></span><br/>
         </td></tr>
+        <tr><td class="score" id="scorebox5">
+            pink <span id="score5"></span> <span id="scorep5"></span><br/>
+        </td></tr>
         <tr><td>
             <button id="btnPreviousGame" onclick="javascript:switchGame(-1)">&lt;&lt;</button>
             <button id="btnNextGame" onclick="javascript:switchGame(1)">&gt;&gt;</button>
@@ -144,6 +147,10 @@
             "5 players": function() {
                 $( this ).dialog( "close" );
                 restart(5, true, selectedMode)
+            },
+            "6 players": function() {
+                $( this ).dialog( "close" );
+                restart(6, true, selectedMode)
             },
             Cancel: function() {
                 $( this ).dialog( "close" );
