@@ -105,6 +105,22 @@ var scores = {
                 if(group) {
                     if(tile.unfinished[index] == 0) {
                         group.unfinished--
+                        if(group.unfinished == 0 && gameExps.trader && place[2] == city && curPlayer >= 0) {
+                            // grant goods to the player who finished the city, should avoid during loading (curPlayer is undefined)
+                            let player = players[curPlayer]
+                            for(let m of group.members) {
+                                let place = m.tile.type.place[m.index]
+                                if(place.wine) {
+                                    player.goods[goodsWine]++
+                                }
+                                if(place.grain) {
+                                    player.goods[goodsGrain]++
+                                }
+                                if(place.cloth) {
+                                    player.goods[goodsCloth]++
+                                }
+                            }
+                        }
                     }
                 } else {
                     // create a new group
@@ -360,6 +376,29 @@ var scores = {
                 player.score2 += addScore
             }
         }
+        if(gameExps.trader) {
+            for(let g = 0;g < 3;g++) {
+                // each goods, players with most goods get 10 score
+                let maxPlayers = players.reduce((max, p) => {
+                    if(max.length != 0) {
+                        if(p.goods[g] > max[0].goods[g]) {
+                            return [p]
+                        } else if(p.goods[g] == max[0].goods[g]) {
+                            return max.concat(p)
+                        }
+                    } else {
+                        if(p.goods[g] > 0) {
+                            return [p]
+                        } else {
+                            return []
+                        }
+                    }
+                }, [])
+                for(let p of maxPlayers) {
+                    p.score2 += 10
+                }
+            }
+        }
     },
 
     initTileType : function() {
@@ -378,6 +417,12 @@ var scores = {
                             place.inn = true
                         } else if(star == starCathedral) {
                             place.cathedral = true
+                        } else if(star == starWine) {
+                            place.wine = true
+                        } else if(star == starGrain) {
+                            place.grain = true
+                        } else if(star == starCloth) {
+                            place.cloth = true
                         }
                     }
                 }

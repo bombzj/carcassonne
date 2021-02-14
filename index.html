@@ -35,6 +35,28 @@
     .dialog button {
         font-size: 24px;
     }
+    #tableScore td {
+        font-size: 20px;
+        text-align:center;
+        padding: 1px;
+        min-width:10px;
+    }
+    .cssPlayerTd {
+        background-repeat:no-repeat;
+        background-position: center;
+        background-size:20px 20px;
+        padding: 0px;
+        width: 24px;
+        height: 24px;
+    }
+    .goodsImg {
+        background-repeat:no-repeat;
+        background-position: center;
+        background-size:20px;
+        padding: 0px;
+        width: 24px;
+        height: 24px;
+    }
 </style>
 </head>
 <body onselectstart="return false;">
@@ -55,23 +77,65 @@
         <tr><td>
             <button onclick="javascript:rotateBackup()">rotate</button><br/>
         </td></tr>
-        <tr><td class="score" id="scorebox0">
-            blue <span id="score0"></span> <span id="scorep0"></span><br/>
-        </td></tr>
-        <tr><td class="score" id="scorebox1">
-            red <span id="score1"></span> <span id="scorep1"></span><br/>
-        </td></tr>
-        <tr><td class="score" id="scorebox2">
-            green <span id="score2"></span> <span id="scorep2"></span><br/>
-        </td></tr>
-        <tr><td class="score" id="scorebox3">
-            yellow <span id="score3"></span> <span id="scorep3"></span><br/>
-        </td></tr>
-        <tr><td class="score" id="scorebox4">
-            black <span id="score4"></span> <span id="scorep4"></span><br/>
-        </td></tr>
-        <tr><td class="score" id="scorebox5">
-            pink <span id="score5"></span> <span id="scorep5"></span><br/>
+        <tr><td class="score">
+            <table id="tableScore" border="1" style="border-collapse: collapse" cellpadding="0px">
+                <tr>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                    <td class="goodsImg" style="background-image: url('res/wine.png');"></td>
+                    <td class="goodsImg" style="background-image: url('res/grain.png');"></td>
+                    <td class="goodsImg" style="background-image: url('res/cloth.png');"></td>
+                </tr>
+                <tr class="cssPlayer" id="scorebox0">
+                    <td onclick="javascript:clickPlayer(0)" class="cssPlayerTd" style="background-image: url('res/blue.png');"></td>
+                    <td id="score0"></td>
+                    <td id="scorep0"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class="cssPlayer" id="scorebox1">
+                    <td onclick="javascript:clickPlayer(1)" class="cssPlayerTd" style="background-image: url('res/red.png');"></td>
+                    <td id="score1"></td>
+                    <td id="scorep1"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class="cssPlayer" id="scorebox2">
+                    <td onclick="javascript:clickPlayer(2)" class="cssPlayerTd" style="background-image: url('res/green.png');"></td>
+                    <td id="score2"></td>
+                    <td id="scorep2"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class="cssPlayer" id="scorebox3">
+                    <td onclick="javascript:clickPlayer(3)" class="cssPlayerTd" style="background-image: url('res/yellow.png');"></td>
+                    <td id="score3"></td>
+                    <td id="scorep3"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class="cssPlayer" id="scorebox4">
+                    <td onclick="javascript:clickPlayer(4)" class="cssPlayerTd" style="background-image: url('res/black.png');"></td>
+                    <td id="score4"></td>
+                    <td id="scorep4"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+                <tr class="cssPlayer" id="scorebox5">
+                    <td onclick="javascript:clickPlayer(5)" class="cssPlayerTd" style="background-image: url('res/pink.png');"></td>
+                    <td id="score5"></td>
+                    <td id="scorep5"></td>
+                    <td></td>
+                    <td></td>
+                    <td></td>
+                </tr>
+            </table>
         </td></tr>
         <tr><td>
             <button id="btnPreviousGame" onclick="javascript:switchGame(-1)">&lt;&lt;</button>

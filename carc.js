@@ -76,19 +76,28 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 	}
 	scores.initScore()
 	lastTile = undefined
+	curPlayer = undefined
 	curRotate = 0
 
 	if(game) {
 		setMode(game.mode || 'classic')
 		beginTime = game.beginTime
 		players = game.players.map(item => {
-			return {
+			let player = {
 				id : item.id,
 				color: allColors[item.id],
 				token: 7,
 				score: item.score,
 				score2: 0
 			}
+			if(gameExps.trader) {
+				if(item.goods) {
+					player.goods = item.goods
+				} else {
+					player.goods = [0, 0, 0]
+				}
+			}
+			return player
 		})
 		tiles = []
 		for(let item of game.tiles) {
@@ -135,13 +144,17 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 		players = []
 		let crossingTile = 21
 		for(let i = 0;i < playerNumber;i++) {
-			players.push({
+			let player = {
 					id : i,
 					color: allColors[i],
 					token: 7,
 					score: 0,
 					score2: 0
-				},)
+				}
+			if(gameExps.trader) {
+				player.goods = [0, 0, 0]
+			}
+			players.push(player)
 		}
 
 		let initX = boardWidth / 2
@@ -240,6 +253,22 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 		document.getElementById("score" + i).innerHTML = players[i].score
 		document.getElementById("scorep"  + i).innerHTML = ""
 		document.getElementById("scorebox" + i).style.display = ''
+		if(gameExps.trader) {
+			for(let g = 0;g < 3;g++) {
+				tableScore.rows[i + 1].cells[3+g].innerHTML = players[i].goods[g]
+			}
+		}
+	}
+	for(let i = 0;i <= players.length;i++) {
+		if(gameExps.trader) {
+			for(let g = 0;g < 3;g++) {
+				tableScore.rows[i].cells[3+g].style.display=""
+			}
+		} else {
+			for(let g = 0;g < 3;g++) {
+				tableScore.rows[i].cells[3+g].style.display="none"
+			}
+		}
 	}
 	for(let i = players.length;i < allColors.length;i++) {
 		document.getElementById("scorebox" + i).style.display = 'none'
@@ -298,6 +327,9 @@ function next() {
 		scores.checkToken()
 		for(let i = 0;i < players.length;i++) {
 			document.getElementById("score" + i).innerHTML = players[i].score
+			for(let g = 0;g < 3;g++) {
+				tableScore.rows[i + 1].cells[3+g].innerHTML = players[i].goods[g]
+			}
 		}
 		lastTile = undefined
 		curPlayer = (curPlayer + 1) % players.length
@@ -668,10 +700,14 @@ function saveGame() {
 			mode : gameMode,
 			beginTime : beginTime,
 			players : players.map(item => {
-				return {
+				let player = {
 					id : item.id,
 					score : item.score
 				}
+				if(gameExps.trader) {
+					player.goods = item.goods
+				}
+				return player
 			}),
 			tiles : tiles.map(item => {
 				return {

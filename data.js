@@ -18,6 +18,10 @@ const expTrader = 4
 const expGeorge = 9999
 const expTest = 10000
 
+const goodsWine = 0
+const goodsGrain = 1
+const goodsCloth = 2
+
 const allColors = [
 	'blue', 'red', 'green', 'yellow', 'black', 'pink'
 ]
