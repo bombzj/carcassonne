@@ -323,6 +323,7 @@ function shuffle(arr) {
 }
 
 function next() {
+	curTile4Token = undefined
 	if(lastTile) {
 		scores.checkToken()
 		for(let i = 0;i < players.length;i++) {
@@ -439,17 +440,15 @@ function rotate(arr, r) {
 const zoomTile = 2;
 // draw all token positions of this tile
 function drawTokenPlace(tile, ex, ey) {
-	let x = grid * tile.x + offsetX
-	let y = grid * tile.y + offsetY
+	let x = grid * tile.x + offsetX - grid / 2
+	let y = grid * tile.y + offsetY - grid / 2
 	draw(tile.type.id, x, y, grid * zoomTile, grid * zoomTile, tile.rotate)
 	if(tile.type.place) {
 		for(let [index, place] of tile.type.place.entries()) {
-			if(!editMode) {
-				// don't draw if this position is invalid
-				let group = tile.groups[index]
-				if(group && group.tokens.length > 0) {
-					continue
-				}
+			// don't draw if this position is invalid
+			let group = tile.groups[index]
+			if(group && group.tokens.length > 0) {
+				continue
 			}
 			let placeR = rotate(place, tile.rotate)
 			let px = x + grid * placeR[0] * zoomTile
@@ -474,8 +473,8 @@ function placeToken(tile, ex, ey) {
 	if(!editMode && player.token == 0) {
 		return
 	}
-	let x = grid * tile.x + offsetX
-	let y = grid * tile.y + offsetY
+	let x = grid * tile.x + offsetX - grid / 2
+	let y = grid * tile.y + offsetY - grid / 2
 	if(tile.type.place) {
 		for(let [index, place] of tile.type.place.entries()) {
 			let placeR = rotate(place, tile.rotate)
@@ -563,7 +562,7 @@ function draw(file, x, y, w = grid, h = grid, rotate = 0) {
 	}
 }
 
-let dragX = null, dragY
+let dragX = null, dragY, dragging = false
 function touchstart(ex, ey) {
 	let x = ex / grid
 	let y = ey / grid
@@ -576,29 +575,23 @@ function touchstart(ex, ey) {
 	}
 
 	if(editMode) {
+		// start dragging a new tile from list of tiles
 		for(let [index, tileType] of tileTypes.entries()) {
 			if(x >= tileType.position[0] && x < tileType.position[2] + tileType.position[0] &&
 				y >= tileType.position[1] && y < tileType.position[3] + tileType.position[1]) {
 				curTile = {x : -1, y : -1, type : tileTypes[index], rotate : curRotate}
+				dragX = ex
+				dragY = ey
 				return
 			}
 		}
 	} else if(tileStack.length > 0 && !lastTile){
+		// start dragging a new tile from tile stack
 		if(ex > backupStartX * grid && ey < grid) {
 			curTile = {x : -1, y : -1, type : tileTypes[tileStack[0]], rotate : curRotate}
+			dragX = ex
+			dragY = ey
 			return
-		}
-		let x = Math.floor((ex - offsetX) / grid)
-		let y = Math.floor((ey - offsetY) / grid)
-		// click on a possible place
-		let so = scores.solutionBoard[x] && scores.solutionBoard[x][y]
-		if(so) {
-			let r = so.rotates.indexOf(curRotate)
-			if(r != -1) {
-				curTile = {x : x, y : y, type : tileTypes[tileStack[0]], rotate : so.rotates[r]}
-				drawAll()
-				return
-			}
 		}
 	}
 	
@@ -630,19 +623,18 @@ function touchstart(ex, ey) {
 }
 
 function touchmove(ex, ey) {
-	if(dragX != null) {
-		offsetX = ex - dragX
-		offsetY = ey - dragY
-		drawAll()
-		return
-	}
-	if(curTile4Token) {
-		drawTokenPlace(curTile4Token, ex, ey)
-	}
-	let x = Math.floor((ex - offsetX) / grid)
-	let y = Math.floor((ey - offsetY) / grid)
-	if(true) {
-		if(curTile) {
+	if(curTile) {
+		if(dragX != null && !dragging) {
+			let dx = ex - dragX
+			let dy = ey - dragY
+			if(dx**2 + dy**2 >= 100) {
+				dragging = true
+			}
+		}
+		if(dragging) {
+			// dragging a new tile
+			let x = Math.floor((ex - offsetX) / grid)
+			let y = Math.floor((ey - offsetY) / grid)
 			if(x >= 0 && x <= boardWidth && y >= 0 && y <= boardWidth) {
 				if(scores.testPlace(x, y, curTile.type, curTile.rotate)) {
 					curTile.x = x
@@ -663,37 +655,85 @@ function touchmove(ex, ey) {
 				drawBackup()
 			}
 		}
+		return
+	}
+
+	// dragging the whole canvas
+	if(dragX != null && !dragging) {
+		let dx = ex - dragX - offsetX
+		let dy = ey - dragY - offsetY
+		if(dx**2 + dy**2 >= 100) {
+			dragging = true
+		}
+	}
+	if(dragging) {
+		offsetX = ex - dragX
+		offsetY = ey - dragY
+		drawAll()
+		return
+	}
+	// mouse over positions for token
+	if(curTile4Token) {
+		drawTokenPlace(curTile4Token, ex, ey)
 	}
 }
 
 function touchend(ex, ey) {
+	if(curTile) {
+		if(dragging) {
+			if(curTile.x != -1) {
+				tiles.push(curTile)
+				scores.addTile(curTile)
+				if(!editMode) {
+					tileStack.shift()
+					tilesLeft.innerHTML = tileStack.length
+					lastTile = curTile
+					btnNext.disabled = false
+					curTile4Token = curTile
+					drawAll()
+					drawTokenPlace(curTile)
+				} else {
+					saveGame()
+				}
+			} else {
+				drawAll()
+			}
+		}
+		curTile = undefined
+	}
+	dragX = null
+	if(dragging) {
+		dragging = false
+		return
+	}
 	if(tileStack.length > 0 && !lastTile && !editMode){
 		if(ex > 8 * grid && ey < grid) {
 			rotateBackup()
 		}
-	}
-	if(curTile) {
-		if(curTile.x != -1) {
-			tiles.push(curTile)
-			scores.addTile(curTile)
-			if(!editMode) {
+		let x = Math.floor((ex - offsetX) / grid)
+		let y = Math.floor((ey - offsetY) / grid)
+		// click on a possible place
+		let so = scores.solutionBoard[x] && scores.solutionBoard[x][y]
+		if(so) {
+			let r = so.rotates.indexOf(curRotate)
+			if(r != -1) {
+				// put a tile directly
+				let tile = {x : x, y : y, type : tileTypes[tileStack[0]], rotate : so.rotates[r]}
+
+				tiles.push(tile)
+				scores.addTile(tile)
 				tileStack.shift()
 				tilesLeft.innerHTML = tileStack.length
-				lastTile = curTile
-				// if(players[curPlayer].token == 0) {
-				// 	next()
-				// } else {
-				// 	btnNext.disabled = false
-				// }
+				lastTile = tile
+
 				btnNext.disabled = false
-			} else {
-				saveGame()
+				curTile4Token = tile
+				drawAll()
+				drawTokenPlace(tile)
+				return
 			}
 		}
-		curTile = undefined
-		drawAll()
 	}
-	dragX = null
 }
 
 function rotateBackup() {
