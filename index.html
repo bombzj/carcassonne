@@ -33,8 +33,8 @@
     .noTitleStuff .ui-dialog-titlebar {
         display:none;
     }
-    .dialog button {
-        font-size: 24px;
+    .ui-button {
+        margin-bottom:10px;
     }
     #tableScore td {
         font-size: 20px;
@@ -149,86 +149,61 @@
             <button class="btn" onclick="javascript:copy()">copy</button>
         </td></tr>
     </table>
-    <div id="dialogNumber" title="Choose Number" class="dialog">
-        <p>Choose Number</p>
-    </div>
     <div id="dialogMode" title="Choose Mode" class="dialog">
-        <p>
             <label for="c1">Classic</label>
             <input type="checkbox" id="c1" name="gmode" value="classic" checked="checked">
-        </p>
-        <p>
             <label for="c2">Inns and Cathedrals</label>
             <input type="checkbox" id="c2" name="gmode" value="inn">
-        </p>
-        <p>
+        <span>
             <label for="c3">Traders & Builders</label>
             <input type="checkbox" id="c3" name="gmode" value="trader">
-        </p>
-        <p>
+        </span>
+        <span>
             <label for="c4">The River</label>
             <input type="checkbox" id="c4" name="gmode" value="river">
-        </p>
-        <p>
+        </span>
+        <span>
             <label for="c5">The River II</label>
             <input type="checkbox" id="c5" name="gmode" value="river2">
-        </p>
-        <p>
+        </span>
+        <span>
             <label for="c6">George</label>
             <input type="checkbox" id="c6" name="gmode" value="george">
-        </p>
-        <p style="display:none">
+        </span>
+        <span style="display:none">
             <label for="c7">Test</label>
             <input type="checkbox" id="c7" name="gmode" value="test">
-        </p>
+        </span>
+        <fieldset>
+            <legend>Players: </legend>
+            <label for="n2">2</label>
+            <input type="radio" id="n2" name="pnum" value="2" checked="checked">
+            <label for="n3">3</label>
+            <input type="radio" id="n3" name="pnum" value="3">
+            <label for="n4">4</label>
+            <input type="radio" id="n4" name="pnum" value="4">
+            <label for="n5">5</label>
+            <input type="radio" id="n5" name="pnum" value="5">
+            <label for="n6">6</label>
+            <input type="radio" id="n6" name="pnum" value="6">
+        </fieldset>
     </div>
 </body>
 <script>
     var selectedMode = 'classic';
+    var selectNumber = 2;
 $(function() {
-    $("input").checkboxradio();
-
-    $("#dialogNumber").dialog({
-        dialogClass: 'noTitleStuff',
-        autoOpen: false,
-        resizable: false,
-        draggable: false,
-        height: "auto",
-        width: 400,
-        modal: true,
-        buttons: {
-            "2 players": function() {
-                $( this ).dialog( "close" );
-                restartGame(2)
-            },
-            "3 players": function() {
-                $( this ).dialog( "close" );
-                restartGame(3)
-            },
-            "4 players": function() {
-                $( this ).dialog( "close" );
-                restartGame(4)
-            },
-            "5 players": function() {
-                $( this ).dialog( "close" );
-                restartGame(5)
-            },
-            "6 players": function() {
-                $( this ).dialog( "close" );
-                restartGame(6)
-            },
-            Cancel: function() {
-                $( this ).dialog( "close" );
-            }
-        }
+    $("input").checkboxradio({
+        icon: false
     });
+
     $("#dialogMode").dialog({
         dialogClass: 'noTitleStuff',
         autoOpen: false,
         resizable: false,
         draggable: false,
         height: "auto",
-        width: 400,
+        width: 500,
         modal: true,
         buttons: {
             "Confirm": function() {
@@ -237,8 +212,9 @@ $(function() {
                 $("input:checkbox[name='gmode']:checked").each(function(){
                     modes.push($(this).val());
                 });
-                selectedMode = modes.join('|')
-                $( "#dialogNumber" ).dialog("open");
+                selectedMode = modes.join('|');
+                selectNumber = parseInt($("input:radio[name='pnum']:checked").val());
+                restartGame(selectNumber)
             },
             Cancel: function() {
                 $( this ).dialog( "close" );
