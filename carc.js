@@ -327,8 +327,10 @@ function next() {
 		scores.checkToken()
 		for(let i = 0;i < players.length;i++) {
 			document.getElementById("score" + i).innerHTML = players[i].score
-			for(let g = 0;g < 3;g++) {
-				tableScore.rows[i + 1].cells[3+g].innerHTML = players[i].goods[g]
+			if(gameExps.trader) {
+				for(let g = 0;g < 3;g++) {
+					tableScore.rows[i + 1].cells[3+g].innerHTML = players[i].goods[g]
+				}
 			}
 		}
 		lastTile = undefined
@@ -435,17 +437,25 @@ function rotate(arr, r) {
 
 
 const zoomTile = 2;
+// draw all token positions of this tile
 function drawTokenPlace(tile, ex, ey) {
 	let x = grid * tile.x + offsetX
 	let y = grid * tile.y + offsetY
 	draw(tile.type.id, x, y, grid * zoomTile, grid * zoomTile, tile.rotate)
 	if(tile.type.place) {
-		for(let place of tile.type.place) {
+		for(let [index, place] of tile.type.place.entries()) {
+			if(!editMode) {
+				// don't draw if this position is invalid
+				let group = tile.groups[index]
+				if(group && group.tokens.length > 0) {
+					continue
+				}
+			}
 			let placeR = rotate(place, tile.rotate)
 			let px = x + grid * placeR[0] * zoomTile
 			let py = y + grid * placeR[1] * zoomTile
-			if(Math.abs(ex - px) < grid / 3 &&
-					Math.abs(ey - py) < grid / 3) {
+			if(Math.abs(ex - px) < grid / 4 &&
+					Math.abs(ey - py) < grid / 4) {
 				
 			} else {
 				ctx.globalAlpha = 0.5
@@ -471,12 +481,12 @@ function placeToken(tile, ex, ey) {
 			let placeR = rotate(place, tile.rotate)
 			let px = x + grid * placeR[0] * zoomTile
 			let py = y + grid * placeR[1] * zoomTile
-			if(Math.abs(ex - px) < grid / 3 &&
-					Math.abs(ey - py) < grid / 3) {
+			if(Math.abs(ex - px) < grid / 4 &&
+					Math.abs(ey - py) < grid / 4) {
 
 				let group = tile.groups[index]
 				if(group && group.tokens.length > 0) {
-					return
+					continue
 				}
 				
 				if(!tile.tokens) {

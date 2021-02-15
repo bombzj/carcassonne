@@ -1,5 +1,5 @@
 <!doctype html>
-<html>
+<html onselectstart="return false;">
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, minimal-ui, maximum-scale=1.0, user-scalable=0">
@@ -15,9 +15,10 @@
 <style>
     body, button, span {
         font-size: 24px;
-        touch-action: manipulation;
     }
     body,html {
+        -webkit-user-select: none;
+        user-select: none;
         position: fixed;
     }
     td {
@@ -59,8 +60,8 @@
     }
 </style>
 </head>
-<body onselectstart="return false;">
-    <canvas id="canvas" width="770" height="700" style="margin:0px;float:left" onselectstart="return false;"></canvas>
+<body>
+    <canvas id="canvas" width="770" height="700" style="margin:0px;float:left"></canvas>
     <table id="tbl">
         <tr><td>
             <button id="btnNext" onclick="javascript:next()" disabled="true">next</button><br/>
@@ -176,7 +177,7 @@
             <label for="c6">George</label>
             <input type="checkbox" id="c6" name="gmode" value="george">
         </p>
-        <p>
+        <p style="display:none">
             <label for="c7">Test</label>
             <input type="checkbox" id="c7" name="gmode" value="test">
         </p>
@@ -184,7 +185,7 @@
 </body>
 <script>
     var selectedMode = 'classic';
-  $(function() {
+$(function() {
     $("input").checkboxradio();
 
     $("#dialogNumber").dialog({
@@ -198,23 +199,23 @@
         buttons: {
             "2 players": function() {
                 $( this ).dialog( "close" );
-                restart(2, true, selectedMode)
+                restartGame()
             },
             "3 players": function() {
                 $( this ).dialog( "close" );
-                restart(3, true, selectedMode)
+                restartGame()
             },
             "4 players": function() {
                 $( this ).dialog( "close" );
-                restart(4, true, selectedMode)
+                restartGame(4)
             },
             "5 players": function() {
                 $( this ).dialog( "close" );
-                restart(5, true, selectedMode)
+                restartGame(5)
             },
             "6 players": function() {
                 $( this ).dialog( "close" );
-                restart(6, true, selectedMode)
+                restartGame(6)
             },
             Cancel: function() {
                 $( this ).dialog( "close" );
@@ -244,13 +245,23 @@
             }
         }
     });
-  });
+});
 
-  function restartOption() {
-    $( "#dialogMode" ).dialog("open");
-  }
+    function restartOption() {
+        $( "#dialogMode" ).dialog("open");
+    }
 
     init()
+
+    function restartGame(num) {
+        for(let i = 0;i < 20;i++) {
+            restart(num, true, selectedMode)
+            // try several times until the first tile is placable
+            if(scores.solutions.length > 0) {
+                return
+            }
+        }
+    }
 
     function copy() {
         new ClipboardJS('.btn', {
