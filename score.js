@@ -385,12 +385,14 @@ var scores = {
                             return [p]
                         } else if(p.goods[g] == max[0].goods[g]) {
                             return max.concat(p)
+                        } else {
+                            return max
                         }
                     } else {
                         if(p.goods[g] > 0) {
                             return [p]
                         } else {
-                            return []
+                            return max
                         }
                     }
                 }, [])
