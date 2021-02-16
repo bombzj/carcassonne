@@ -11,7 +11,10 @@ let tokens
 let gameMode
 let beginTime	// begin time of this game
 let gameExps
-let secondTile = 0	// builder feature, now it is the second tile, 1-got a chance 2-used
+let secondTile		// builder feature, now it is the second tile, 1-got a chance 2-used
+let isPortal		// the portal is now open
+let dragonTile		// which tile is dragon on
+let dragonMoves		// tiles of dragon's path, undefined if not started
 
 function init() {
 	btnDelete.disabled = true
@@ -30,6 +33,8 @@ function init() {
 		files.push(c + tokenPig + '.png')
 		files.push(c + tokenBuilder + '.png')
 	}
+	files.push('dragon' + '.png')
+	files.push('fairy' + '.png')
 	loadImages(files, () => {
 		for(let c of allColors) {
 			images[c + tokenLarge] = images[c]
@@ -89,6 +94,10 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 	curTile4Token = undefined
 	curPlayer = undefined
 	curRotate = 0
+	secondTile = 0
+	isPortal = false
+	dragonTile = undefined
+	dragonMoves = undefined
 
 	if(game) {
 		setMode(game.mode || 'base')
@@ -156,6 +165,9 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 			} else {
 				player.token--
 			}
+		}
+		if(game.dragonTile) {
+			dragonTile = tiles[game.dragonTile]
 		}
 		tileStack = game.stack
 		curPlayer = game.curPlayer
@@ -357,6 +369,7 @@ function shuffle(arr) {
 
 function next() {
 	curTile4Token = undefined
+	isPortal = false
 	if(lastTile) {
 		scores.checkToken()
 		for(let i = 0;i < players.length;i++) {
@@ -427,7 +440,7 @@ function empty() {
 
 function drawAll(c) {
 	ctx.clearRect(0,0,canvas.width,canvas.height); 
-	if(!lastTile && !editMode) {
+	if(!lastTile && !editMode && !dragonMoves) {
 		ctx.fillStyle='#E0E0F0'
 		// draw all possible places of this rotate
 		for(let so of scores.solutions) {
@@ -462,6 +475,16 @@ function drawAll(c) {
 				grid/3, grid/3)
 		}
 	}
+	if(dragonTile) {
+		if(!dragonMoves || lastTile) {
+			ctx.globalAlpha = 0.7
+		}
+		draw('dragon', 
+			grid * (dragonTile.x + 0.5) + offsetX - grid/3, 
+			grid * (dragonTile.y + 0.5) + offsetY - grid/3, 
+			grid/1.5, grid/1.5)
+		ctx.globalAlpha = 1
+	}
 	// mouse over positions for token
 	if(curTile4Token) {
 		drawTokenPlace(curTile4Token)
@@ -482,9 +505,12 @@ function rotate(arr, r) {
 }
 
 // test if the place can put the token
-function testToken(playerId, group, tokenType) {
+function testToken(playerId, group, tokenType, isLastTile) {
 	if(group) {
 		if(tokenType > 1) {
+			if(!editMode && !isLastTile) {
+				return false
+			}
 			if(tokenType == tokenPig) {
 				if(group.type != farm || !group.tokens.some(t => t.player.id == playerId)) {
 					return false
@@ -498,8 +524,20 @@ function testToken(playerId, group, tokenType) {
 			if(group.tokens.length > 0) {	// normal/large meeple
 				return false
 			}
+			if(!editMode && !isLastTile) {
+				if(!isPortal) {
+					return false
+				}
+				// when portal opened, only incompleted feature can be placed
+				if(!group || group.unfinished == 0) {
+					return false
+				}
+			}
 		}
 	} else {
+		if(!editMode && !isLastTile) {
+			return false
+		}
 		if(tokenType == tokenPig || tokenType == tokenBuilder) {
 			return false
 		}
@@ -517,7 +555,7 @@ function drawTokenPlace(tile, ex = -1000, ey = -1000) {
 		for(let [index, place] of tile.type.place.entries()) {
 			// don't draw if this position is invalid
 			let group = tile.groups[index]
-			if(!testToken(curPlayer, group, curTokenType)) {
+			if(!testToken(curPlayer, group, curTokenType, tile == lastTile)) {
 				continue
 			}
 			let placeR = rotate(place, tile.rotate)
@@ -569,7 +607,7 @@ function placeToken(tile, ex, ey) {
 					Math.abs(ey - py) < grid / 4) {
 
 				let group = tile.groups[index]
-				if(!testToken(curPlayer, group, curTokenType)) {
+				if(!testToken(curPlayer, group, curTokenType, tile == lastTile)) {
 					continue
 				}
 				
@@ -759,21 +797,38 @@ function touchmove(ex, ey) {
 	}
 }
 
+function placeTile(tile) {
+	tiles.push(tile)
+	scores.addTile(tile)
+	curTokenType = 0
+	tileStack.shift()
+	tilesLeft.innerHTML = tileStack.length
+	lastTile = tile
+	btnNext.disabled = false
+	if(tile.type.portal) {
+		isPortal = true
+	}
+	if(tile.type.volcano) {
+		dragonTile = tile
+	}
+	if(tile.type.dragon && dragonTile) {
+		dragonMoves = [dragonTile]
+	}
+	if(!isPortal && !tile.type.volcano) {
+		curTile4Token = tile
+	}
+}
+
 function touchend(ex, ey) {
 	if(curTile) {
 		if(dragging) {
 			if(curTile.x != -1) {
-				tiles.push(curTile)
-				scores.addTile(curTile)
-				curTokenType = 0
 				if(!editMode) {
-					tileStack.shift()
-					tilesLeft.innerHTML = tileStack.length
-					lastTile = curTile
-					btnNext.disabled = false
-					curTile4Token = curTile
+					placeTile(curTile)
 					drawAll()
 				} else {
+					tiles.push(curTile)
+					scores.addTile(curTile)
 					saveGame()
 				}
 			} else {
@@ -787,6 +842,42 @@ function touchend(ex, ey) {
 		dragging = false
 		return
 	}
+	if(!lastTile && dragonMoves) {
+		// time to move the dragon!! 6 times and no same tiles
+		let x = Math.floor((ex - offsetX) / grid)
+		let y = Math.floor((ey - offsetY) / grid)
+		// click on a possible place
+		let tile = scores.board[x] && scores.board[x][y]
+		if(tile && dragonMoves.indexOf(tile) == -1) {
+			if(Math.abs(x- dragonTile.x) + Math.abs(y- dragonTile.y) == 1) {
+				dragonMoves.push(tile)
+				dragonTile = tile
+				// kick all tokens from this tile
+				tokens = tokens.filter(token => {
+					if(token.tile == tile) {
+						if(token.type2) {
+							token.player.tokens[token.type2]++
+						} else {
+							token.player.token++
+						}
+						// remove it from group as well
+						let group = token.tile.groups[token.index]
+						if(group) {
+							group.tokens = group.tokens.filter(t => t != token)
+						}
+						return false
+					}
+					return true
+				})
+				// end of moves
+				if(dragonMoves.length > 6 || dragonDeadEnd()) {
+					dragonMoves = undefined
+				}
+				drawAll()
+			}
+		}
+		return
+	}
 	if(curTile4Token) {	// place token or cancel
 		if(placeToken(curTile4Token, ex, ey)) {
 			if(editMode) {
@@ -794,7 +885,7 @@ function touchend(ex, ey) {
 			}
 			return
 		}
-		if(editMode) {
+		if(editMode || isPortal) {
 			curTile4Token = false
 		}
 		drawAll()
@@ -842,16 +933,7 @@ function touchend(ex, ey) {
 			if(r != -1) {
 				// put a tile directly
 				let tile = {x : x, y : y, type : tileTypes[tileStack[0]], rotate : so.rotates[r]}
-
-				tiles.push(tile)
-				scores.addTile(tile)
-				curTokenType = 0
-				tileStack.shift()
-				tilesLeft.innerHTML = tileStack.length
-				lastTile = tile
-
-				btnNext.disabled = false
-				curTile4Token = tile
+				placeTile(tile)
 				drawAll()
 				return
 			}
@@ -864,8 +946,8 @@ function touchend(ex, ey) {
 			if(ox >= tile.x && ox < tile.x + 1 &&
 				oy >= tile.y && oy < tile.y + 1) {
 	
-				if(!editMode) {
-					if(!lastTile || lastTile != tile) {
+				if(!editMode && !isPortal) {
+					if(!lastTile || lastTile != tile || tile.type.volcano) {
 						break
 					}
 				} else {
@@ -880,6 +962,17 @@ function touchend(ex, ey) {
 		}
 	}
 
+}
+
+// test if dragon is in a dead end
+function dragonDeadEnd() {
+	for(let dir of connectRect) {
+		let tile = scores.board[dir[0] + dragonTile.x][dir[1] + dragonTile.y]
+		if(tile && dragonMoves.indexOf(tile) == -1) {
+			return false
+		}
+	}
+	return true
 }
 
 function rotateBackup() {
@@ -925,6 +1018,9 @@ function saveGame() {
 			}),
 			stack : tileStack,
 			curPlayer : curPlayer
+		}
+		if(dragonTile) {
+			game.dragonTile = dragonTile.id
 		}
 		localStorage.setItem("game"+gameId, JSON.stringify(game));
 		games[gameId] = game
