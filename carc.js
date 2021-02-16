@@ -219,6 +219,7 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 		let traderTiles = []
 		let riverTiles = []
 		let river2Tiles = []
+		let dragonTiles = []
 		for(let tile of tileTypes) {
 			if(tile.riverStart) {
 				riverStart = tile.id
@@ -236,6 +237,8 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 						innTiles.push(tile.id)
 					} else if(tile.exp == expTrader) {
 						traderTiles.push(tile.id)
+					} else if(tile.exp == expDragon) {
+						dragonTiles.push(tile.id)
 					} else {
 						basicTiles.push(tile.id)
 					}
@@ -247,6 +250,9 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 		}
 		if(gameExps.trader) {
 			others = others.concat(traderTiles)
+		}
+		if(gameExps.dragon) {
+			others = others.concat(dragonTiles)
 		}
 		if(gameExps.base) {
 			others = others.concat(basicTiles)

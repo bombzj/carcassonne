@@ -7,6 +7,10 @@ const cloister = 4
 const starFlag = 1		// flag on a city
 const starInn = 2		// inn on a road
 const starCathedral = 3		// cathedrall in a city
+const starPrincess = 4		// Princess in a city
+const starVolcano = 5		// Volcano in a tile
+const starPortal = 6		// Portal in a tile
+const starDragon = 7		// Dragon in a tile
 const starWine = 10		// goods wine in a city
 const starGrain = 11		// goods grain in a city
 const starCloth = 12		// goods cloth in a city
@@ -15,6 +19,7 @@ const expInn = 1
 const expRiver = 2
 const expRiver2 = 3
 const expTrader = 4
+const expDragon = 5
 const expGeorge = 9999
 const expTest = 10000
 
@@ -952,6 +957,356 @@ const tileTypes = [
 			[0.15, 0.5, city, [1]],
 			[0.5, 0.5, road, [3]],
 			[0.3, 0.8, farm, [4], [2]],
+			[0.8, 0.8, farm, [5,6]],
+		]
+	},
+	{	// (87)			
+		count:	1,
+		exp : expDragon,
+		template: 19,
+		connect : [city, city, farm, city],
+		place: [
+			[0.5, 0.3, city, [0, 1, 3], [], [starPrincess]],
+			[0.5, 0.85, farm, [4,5], [0]],
+		]
+	},
+	{	// (88)			
+		count:	1,
+		exp : expDragon,
+		template: 17,
+		connect : [road, road, city, road],
+		place: [
+			[0.15, 0.15, farm, [1,2]],
+			[0.85, 0.15, farm, [0,7]],
+			[0.5, 0.53, farm, [3,6], [6]],
+			[0.5, 0.15, road, [0]],
+			[0.2, 0.4, road, [1]],
+			[0.8, 0.43, road, [3]],
+			[0.5, 0.85, city, [2], [], [starPrincess]],
+		]
+	},
+	{	// (89)			
+		count:	1,
+		exp : expDragon,
+		template: 44,
+		connect : [city, city, farm, farm],
+		place: [
+			[0.2, 0.3, city, [0, 1], [], [starPrincess]],
+			[0.7, 0.7, farm, [4,5,6,7], [0]],
+		]
+	},
+	{	// (90)			
+		count:	1,
+		exp : expDragon,
+		connect : [city, city, farm, farm],
+		place: [
+			[0.5, 0.87, farm, [4,5], [1]],
+			[0.4, 0.4, city, [0, 1], [], [starPrincess]],
+			[0.9, 0.5, farm, [6,7], [1]],
+		]
+	},
+	{	// (91)			
+		count:	1,
+		exp : expDragon,
+		template: 10,
+		connect : [road, city, city, road],
+		place: [
+			[0.85, 0.15, farm, [0,7]],
+			[0.7, 0.3, road, [0, 3]],
+			[0.5, 0.5, farm, [1,6], [3]],
+			[0.2, 0.8, city, [1, 2], [], [starPrincess]],
+		]
+	},
+	{	// (92)			
+		count:	1,
+		exp : expDragon,
+		connect : [city, farm, city, city],
+		place: [
+			[0.5, 0.2, city, [0], [], [starPrincess]],
+			[0.55, 0.55, farm, [], [0,2]],
+			[0.85, 0.85, city, [2, 3], [], [starFlag]],
+			[0.1, 0.3, farm, [2,3], [0]],
+		]
+	},
+	{	// (93)			
+		count:	1,
+		exp : expDragon,
+		volcano: true,
+		connect : [farm, farm, road, farm],
+		place: [
+			[0.8, 0.2, farm, [1,2,3,4,5,6,7,0]],
+			[0.5, 0.8, road, [2]],
+		]
+	},
+	{	// (94)			
+		count:	1,
+		exp : expDragon,
+		template: 0,
+		volcano: true,
+		connect : [farm, road, farm, road],
+		place: [
+			[0.7, 0.25, farm, [0, 1, 2, 7]],
+			[0.5, 0.85, farm, [3, 4, 5, 6]],
+			[0.5, 0.6, road, [1, 3]],
+		]
+	},
+	{	// (95)			
+		count:	1,
+		exp : expDragon,
+		volcano: true,
+		connect : [farm, farm, farm, farm],
+		place: [
+			[0.7, 0.3, farm, [1,2,3,4,5,6,7,0]],
+		]
+	},
+	{	// (96)			
+		count:	1,
+		exp : expDragon,
+		template: 5,
+		volcano: true,
+		connect : [farm, farm, road, road],
+		place: [
+			[0.8, 0.2, farm, [0,1,2,3,4,7]],
+			[0.6, 0.6, road, [2, 3]],
+			[0.8, 0.8, farm, [5,6]],
+		]
+	},
+	{	// (97)			
+		count:	1,
+		exp : expDragon,
+		template: 28,
+		volcano: true,
+		connect : [city, city, farm, farm],
+		place: [
+			[0.5, 0.15, city, [0]],
+			[0.1, 0.5, city, [1]],
+			[0.5, 0.6, farm, [4,5,6,7], [0,1]],
+		]
+	},
+	{	// (98)			
+		count:	1,
+		exp : expDragon,
+		template: 15,
+		volcano: true,
+		connect : [city, farm, farm, farm],
+		place: [
+			[0.5, 0.15, city, [0]],
+			[0.7, 0.6, farm, [2,3,4,5,6,7] ,[0]],
+		]
+	},
+	{	// (99)			
+		count:	1,
+		exp : expDragon,
+		template: 25,
+		portal: true,
+		connect : [city, city, farm, city],
+		place: [
+			[0.5, 0.3, city, [0, 1, 3], [], [starFlag]],
+			[0.5, 0.85, farm, [4,5], [0]],
+		]
+	},
+	{	// (100)			
+		count:	1,
+		exp : expDragon,
+		template: 24,
+		portal: true,
+		connect : [road, farm, city, road],
+		place: [
+			[0.85, 0.15, farm, [0,7]],
+			[0.65, 0.35, road, [0, 3]],
+			[0.3, 0.5, farm, [1,2,3,6], [3]],
+			[0.5, 0.87, city, [2]],
+		]
+	},
+	{	// (101)			
+		count:	1,
+		exp : expDragon,
+		portal: true,
+		connect : [farm, road, road, road],
+		place: [
+			[0.5, 0.2, farm, [0,1,2,7]],
+			[0.2, 0.8, farm, [3,4]],
+			[0.8, 0.8, farm, [5,6]],
+			[0.15, 0.5, road, [1]],
+			[0.85, 0.5, road, [3]],
+			[0.5, 0.8, road, [2]],
+		]
+	},
+	{	// (102)			
+		count:	1,
+		exp : expDragon,
+		template: 10,
+		portal: true,
+		connect : [road, city, city, road],
+		place: [
+			[0.85, 0.15, farm, [0,7]],
+			[0.7, 0.3, road, [0, 3]],
+			[0.5, 0.5, farm, [1,6], [3]],
+			[0.2, 0.8, city, [1, 2]],
+		]
+	},
+	{	// (103)			
+		count:	1,
+		exp : expDragon,
+		template: 9,
+		portal: true,
+		connect : [city, farm, road, road],
+		place: [
+			[0.5, 0.2, city, [0]],
+			[0.25, 0.7, farm, [2,3,4,7], [0]],
+			[0.58, 0.58, road, [2, 3]],
+			[0.8, 0.8, farm, [5,6]],
+		]
+	},
+	{	// (104)			
+		count:	1,
+		exp : expDragon,
+		template: 42,
+		portal: true,
+		connect : [road, road, road, road],
+		place: [
+			[0.3, 0.3, road, [0, 1]],
+			[0.6, 0.6, road, [2, 3]],
+			[0.1, 0.1, farm, [1, 2]],
+			[0.8, 0.2, farm, [0,3,4,7]],
+			[0.85, 0.85, farm, [5,6]],
+		]
+	},
+	{	// (105)			
+		count:	1,
+		exp : expDragon,
+		template: 26,
+		dragon: true,
+		connect : [farm, road, road, road],
+		place: [
+			[0.5, 0.2, farm, [0,1,2,7]],
+			[0.2, 0.8, farm, [3,4]],
+			[0.8, 0.8, farm, [5,6]],
+			[0.15, 0.5, road, [1]],
+			[0.85, 0.5, road, [3]],
+			[0.5, 0.8, road, [2]],
+		]
+	},
+	{	// (106)			
+		count:	1,
+		exp : expDragon,
+		dragon: true,
+		connect : [city, city, farm, city],
+		place: [
+			[0.8, 0.4, city, [0, 1, 3]],
+			[0.5, 0.85, farm, [4,5], [0]],
+			[0.4, 0.5, cloister, []],
+		]
+	},
+	{	// (107)
+		count:	2,
+		exp : expDragon,
+		template: 5,
+		dragon: true,
+		connect : [farm, farm, road, road],
+		place: [
+			[0.3, 0.3, farm, [0,1,2,3,4,7]],
+			[0.5, 0.5, road, [2, 3]],
+			[0.8, 0.8, farm, [5,6]],
+		]
+	},
+	{	// (108)			
+		count:	1,
+		exp : expDragon,
+		dragon: true,
+		connect : [road, city, road, city],
+		place: [
+			[0.8, 0.05, farm, [0,1], [1]],
+			[0.5, 0.4, city, [1, 3]],
+			[0.2, 0.87, farm, [4,5], [1]],
+			[0.5, 0.1, road, [0, 2]],
+		]
+	},
+	{	// (109)			
+		count:	1,
+		exp : expDragon,
+		template: 15,
+		dragon: true,
+		connect : [city, farm, farm, farm],
+		place: [
+			[0.5, 0.15, city, [0]],
+			[0.5, 0.6, farm, [2,3,4,5,6,7] ,[0]],
+		]
+	},
+	{	// (110)			
+		count:	1,
+		exp : expDragon,
+		template: 58,
+		dragon: true,
+		connect : [farm, road, road, road],
+		place: [
+			[0.5, 0.2, farm, [0,1,2,7]],
+			[0.2, 0.8, farm, [3,4]],
+			[0.8, 0.8, farm, [5,6]],
+			[0.15, 0.5, road, [1]],
+			[0.85, 0.5, road, [3]],
+			[0.5, 0.8, road, [2]],
+			[0.5, 0.5, cloister, []],
+		]
+	},
+	{	// (111)
+		count:	1,
+		exp : expDragon,
+		template: 0,
+		dragon: true,
+		connect : [farm, road, farm, road],	// top left bottom right
+		place: [
+			[0.5, 0.25, farm, [0, 1, 2, 7]],
+			[0.5, 0.75, farm, [3, 4, 5, 6]],
+			[0.5, 0.5, road, [1, 3]],
+		]
+	},
+	{	// (112)			
+		count:	1,
+		exp : expDragon,
+		template: 13,
+		dragon: true,
+		connect : [farm, city, farm, city],
+		place: [
+			[0.5, 0.05, farm, [0,1], [1]],
+			[0.5, 0.4, city, [1, 3], [], [starFlag]],
+			[0.5, 0.87, farm, [4,5], [1]],
+		]
+	},
+	{	// (113)			
+		count:	1,
+		exp : expDragon,
+		template: 24,
+		dragon: true,
+		connect : [road, farm, city, road],
+		place: [
+			[0.85, 0.15, farm, [0,7]],
+			[0.65, 0.35, road, [0, 3]],
+			[0.3, 0.5, farm, [1,2,3,6], [3]],
+			[0.5, 0.87, city, [2]],
+		]
+	},
+	{	// (114)			
+		count:	1,
+		exp : expDragon,
+		template: 44,
+		dragon: true,
+		connect : [city, city, farm, farm],
+		place: [
+			[0.2, 0.3, city, [0, 1]],
+			[0.7, 0.7, farm, [4,5,6,7], [0]],
+		]
+	},
+	{	// (115)			
+		count:	1,
+		exp : expDragon,
+		template: 9,
+		dragon: true,
+		connect : [city, farm, road, road],
+		place: [
+			[0.5, 0.2, city, [0]],
+			[0.25, 0.7, farm, [2,3,4,7], [0]],
+			[0.58, 0.58, road, [2, 3]],
 			[0.8, 0.8, farm, [5,6]],
 		]
 	},
