@@ -107,15 +107,11 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 			}
 			if(gameExps.trader) {
 				player.goods = item.goods || [0, 0, 0]
-				if(item.tokens) {
-					player.tokens[tokenPig] = item.tokens[tokenPig] || 0
-					player.tokens[tokenBuilder] = item.tokens[tokenBuilder] || 0
-				}
+				player.tokens[tokenPig] = 1
+				player.tokens[tokenBuilder] = 1
 			}
 			if(gameExps.inn) {
-				if(item.tokens) {
-					player.tokens[tokenLarge] = item.tokens[tokenLarge] || 0
-				}
+				player.tokens[tokenLarge] = 1
 			}
 			return player
 		})
@@ -155,7 +151,11 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 			if(group) {
 				group.tokens.push(token)
 			}
-			player.token--
+			if(token.type2) {
+				player.tokens[token.type2]--
+			} else {
+				player.token--
+			}
 		}
 		tileStack = game.stack
 		curPlayer = game.curPlayer
@@ -477,18 +477,24 @@ function rotate(arr, r) {
 
 // test if the place can put the token
 function testToken(playerId, group, tokenType) {
-	if(tokenType > 1) {
-		if(tokenType == tokenPig) {
-			if(group.type != farm || !group.tokens.some(t => t.player.id == playerId)) {
-				return false
+	if(group) {
+		if(tokenType > 1) {
+			if(tokenType == tokenPig) {
+				if(group.type != farm || !group.tokens.some(t => t.player.id == playerId)) {
+					return false
+				}
+			} else if(tokenType == tokenBuilder) {
+				if(group.type != city && group.type != road || !group.tokens.some(t => t.player.id == playerId)) {
+					return false
+				}
 			}
-		} else if(tokenType == tokenBuilder) {
-			if(group.type != city && group.type != road || !group.tokens.some(t => t.player.id == playerId)) {
+		} else {
+			if(group.tokens.length > 0) {	// normal/large meeple
 				return false
 			}
 		}
 	} else {
-		if(group.tokens.length > 0) {	// normal/large meeple
+		if(tokenType == tokenPig || tokenType == tokenBuilder) {
 			return false
 		}
 	}
@@ -505,10 +511,8 @@ function drawTokenPlace(tile, ex = -1000, ey = -1000) {
 		for(let [index, place] of tile.type.place.entries()) {
 			// don't draw if this position is invalid
 			let group = tile.groups[index]
-			if(group) {
-				if(!testToken(curPlayer, group, curTokenType)) {
-					continue
-				}
+			if(!testToken(curPlayer, group, curTokenType)) {
+				continue
 			}
 			let placeR = rotate(place, tile.rotate)
 			let px = x + grid * placeR[0] * zoomTile
@@ -539,7 +543,7 @@ function placeToken(tile, ex, ey) {
 	let player = players[curPlayer]
 	if(!editMode) {
 		if(curTokenType == 0) {
-			if(player.token == 0) {
+			if(player.token <= 0) {
 				return false
 			}
 		} else {
@@ -559,10 +563,8 @@ function placeToken(tile, ex, ey) {
 					Math.abs(ey - py) < grid / 4) {
 
 				let group = tile.groups[index]
-				if(group) {
-					if(!testToken(curPlayer, group, curTokenType)) {
-						continue
-					}
+				if(!testToken(curPlayer, group, curTokenType)) {
+					continue
 				}
 				
 				// if(!tile.tokens) {
@@ -892,7 +894,6 @@ function saveGame() {
 				let player = {
 					id : item.id,
 					score : item.score,
-					tokens : item.tokens
 				}
 				if(gameExps.trader) {
 					player.goods = item.goods
