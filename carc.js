@@ -4,12 +4,14 @@ let offsetX, offsetY
 let touchX, touchY, tileStack, tiles
 let players
 let curPlayer
+let curTokenType	// current token type to place, default is normal meeple
 let curTile4Token
 let lastTile	// token can place here only
 let tokens
 let gameMode
 let beginTime	// begin time of this game
 let gameExps
+let secondTile = 0	// builder feature, now it is the second tile, 1-got a chance 2-used
 
 function init() {
 	btnDelete.disabled = true
@@ -24,12 +26,21 @@ function init() {
 	}
 	for(let c of allColors) {
 		files.push(c + '.png')
+		// files.push(c + tokenLarge + '.png')
+		files.push(c + tokenPig + '.png')
+		files.push(c + tokenBuilder + '.png')
 	}
 	loadImages(files, () => {
-		drawAll()
+		for(let c of allColors) {
+			images[c + tokenLarge] = images[c]
+		}
+		initFinished()
 	});
 
-	
+	loadAllGame()
+}
+
+function initFinished() {
 	offsetX = -grid * (boardWidth / 2 - 2)
 	offsetY = -grid * (boardWidth / 2 - 3)
 
@@ -65,36 +76,45 @@ function init() {
 		touchend(event.changedTouches[0].clientX - bcr.x, event.changedTouches[0].clientY - bcr.y)
 	}, false);
 
-	loadAllGame()
 	restart()
 }
 
-function restart(playerNumber = 2, clear = false, mode = 'classic') {
+function restart(playerNumber = 2, clear = false, mode = 'base') {
 	let game = games[gameId]
 	if(clear) {
 		game = undefined
 	}
 	scores.initScore()
 	lastTile = undefined
+	curTile4Token = undefined
 	curPlayer = undefined
 	curRotate = 0
 
 	if(game) {
-		setMode(game.mode || 'classic')
+		setMode(game.mode || 'base')
 		beginTime = game.beginTime
+		if(game.secondTile == 2) {
+			secondTile = 2
+		}
 		players = game.players.map(item => {
 			let player = {
 				id : item.id,
 				color: allColors[item.id],
-				token: 7,
+				token: initialTokenNumber,
 				score: item.score,
-				score2: 0
+				score2: 0,
+				tokens: []		// extra tokens from expansions
 			}
 			if(gameExps.trader) {
-				if(item.goods) {
-					player.goods = item.goods
-				} else {
-					player.goods = [0, 0, 0]
+				player.goods = item.goods || [0, 0, 0]
+				if(item.tokens) {
+					player.tokens[tokenPig] = item.tokens[tokenPig] || 0
+					player.tokens[tokenBuilder] = item.tokens[tokenBuilder] || 0
+				}
+			}
+			if(gameExps.inn) {
+				if(item.tokens) {
+					player.tokens[tokenLarge] = item.tokens[tokenLarge] || 0
 				}
 			}
 			return player
@@ -123,13 +143,14 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 				tile : tile,
 				index : item.index,
 				player : player,
-				type : item.type
+				type : item.type,
+				type2 : item.type2,
 			}
 			tokens.push(token)
-			if(!tile.tokens) {
-				tile.tokens = []
-			}
-			tile.tokens[item.index] = item.player
+			// if(!tile.tokens) {
+			// 	tile.tokens = []
+			// }
+			// tile.tokens[item.index] = item.player
 
 			if(group) {
 				group.tokens.push(token)
@@ -147,12 +168,18 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 			let player = {
 					id : i,
 					color: allColors[i],
-					token: 7,
+					token: initialTokenNumber,
 					score: 0,
-					score2: 0
+					score2: 0,
+					tokens: []		// extra tokens from expansions
 				}
 			if(gameExps.trader) {
 				player.goods = [0, 0, 0]
+				player.tokens[tokenPig] = 1
+				player.tokens[tokenBuilder] = 1
+			}
+			if(gameExps.inn) {
+				player.tokens[tokenLarge] = 1
 			}
 			players.push(player)
 		}
@@ -198,7 +225,7 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 			} else if(tile.riverEnd) {
 				riverEnd = tile.id
 			} else if(tile.id == crossingTile) {
-				// start for classic version
+				// start for base version
 			} else {
 				for(let i = 0;i < tile.count;i++) {
 					if(tile.exp == expRiver) {
@@ -221,7 +248,7 @@ function restart(playerNumber = 2, clear = false, mode = 'classic') {
 		if(gameExps.trader) {
 			others = others.concat(traderTiles)
 		}
-		if(gameExps.classic) {
+		if(gameExps.base) {
 			others = others.concat(basicTiles)
 		}
 		if(gameExps.river) {
@@ -335,7 +362,13 @@ function next() {
 			}
 		}
 		lastTile = undefined
-		curPlayer = (curPlayer + 1) % players.length
+		// next player, if builder, get an extra turn
+		if(secondTile == 1) {
+			secondTile = 2
+		} else {
+			secondTile = 0
+			curPlayer = (curPlayer + 1) % players.length
+		}
 		btnNext.disabled = true
 		let need = true
 		while(need && tileStack.length != 0) {
@@ -407,19 +440,25 @@ function drawAll(c) {
 	for(let tile of tiles) {
 		draw(tile.type.id, grid * tile.x + offsetX, grid * tile.y + offsetY, grid, grid, tile.rotate)
 	}
-	for(let tile of tiles) {
-		if(tile.tokens) {
-			let place = tile.type.place
-			for(let [index, token] of tile.tokens.entries()) {
-				let tokenPlace = rotate(place[index], tile.rotate)
-				if(players[token]) {
-					draw(players[token].color, 
-						grid * (tile.x + tokenPlace[0]) + offsetX - grid/6, 
-						grid * (tile.y + tokenPlace[1]) + offsetY - grid/6, 
-						grid/3, grid/3)
-				}
-			}
+	for(let token of tokens) {
+		let tile = token.tile
+		let place = tile.type.place
+		let tokenPlace = rotate(place[token.index], tile.rotate)
+		if(token.type2) {
+			draw(token.player.color + token.type2, 
+				grid * (tile.x + tokenPlace[0]) + offsetX - grid/4, 
+				grid * (tile.y + tokenPlace[1]) + offsetY - grid/4, 
+				grid/2, grid/2)
+		} else {
+			draw(token.player.color, 
+				grid * (tile.x + tokenPlace[0]) + offsetX - grid/6, 
+				grid * (tile.y + tokenPlace[1]) + offsetY - grid/6, 
+				grid/3, grid/3)
 		}
+	}
+	// mouse over positions for token
+	if(curTile4Token) {
+		drawTokenPlace(curTile4Token)
 	}
 	drawBackup()
 }
@@ -436,10 +475,29 @@ function rotate(arr, r) {
 	}
 }
 
+// test if the place can put the token
+function testToken(playerId, group, tokenType) {
+	if(tokenType > 1) {
+		if(tokenType == tokenPig) {
+			if(group.type != farm || !group.tokens.some(t => t.player.id == playerId)) {
+				return false
+			}
+		} else if(tokenType == tokenBuilder) {
+			if(group.type != city && group.type != road || !group.tokens.some(t => t.player.id == playerId)) {
+				return false
+			}
+		}
+	} else {
+		if(group.tokens.length > 0) {	// normal/large meeple
+			return false
+		}
+	}
+	return true
+}
 
 const zoomTile = 2;
 // draw all token positions of this tile
-function drawTokenPlace(tile, ex, ey) {
+function drawTokenPlace(tile, ex = -1000, ey = -1000) {
 	let x = grid * tile.x + offsetX - grid / 2
 	let y = grid * tile.y + offsetY - grid / 2
 	draw(tile.type.id, x, y, grid * zoomTile, grid * zoomTile, tile.rotate)
@@ -447,8 +505,10 @@ function drawTokenPlace(tile, ex, ey) {
 		for(let [index, place] of tile.type.place.entries()) {
 			// don't draw if this position is invalid
 			let group = tile.groups[index]
-			if(group && group.tokens.length > 0) {
-				continue
+			if(group) {
+				if(!testToken(curPlayer, group, curTokenType)) {
+					continue
+				}
 			}
 			let placeR = rotate(place, tile.rotate)
 			let px = x + grid * placeR[0] * zoomTile
@@ -459,10 +519,17 @@ function drawTokenPlace(tile, ex, ey) {
 			} else {
 				ctx.globalAlpha = 0.5
 			}
-			draw(players[curPlayer].color, 
-				px - grid / 3, 
-				py - grid / 3,
-				grid / 1.5, grid / 1.5)
+			if(curTokenType) {
+				draw(players[curPlayer].color + curTokenType, 
+					px - grid / 3, 
+					py - grid / 3,
+					grid / 1.5, grid / 1.5)
+			} else {
+				draw(players[curPlayer].color, 
+					px - grid / 3, 
+					py - grid / 3,
+					grid / 1.5, grid / 1.5)
+			}
 			ctx.globalAlpha = 1
 		}
 	}
@@ -470,8 +537,16 @@ function drawTokenPlace(tile, ex, ey) {
 
 function placeToken(tile, ex, ey) {
 	let player = players[curPlayer]
-	if(!editMode && player.token == 0) {
-		return
+	if(!editMode) {
+		if(curTokenType == 0) {
+			if(player.token == 0) {
+				return false
+			}
+		} else {
+			if(!player.tokens[curTokenType]) {
+				return false
+			}
+		}
 	}
 	let x = grid * tile.x + offsetX - grid / 2
 	let y = grid * tile.y + offsetY - grid / 2
@@ -484,24 +559,34 @@ function placeToken(tile, ex, ey) {
 					Math.abs(ey - py) < grid / 4) {
 
 				let group = tile.groups[index]
-				if(group && group.tokens.length > 0) {
-					continue
+				if(group) {
+					if(!testToken(curPlayer, group, curTokenType)) {
+						continue
+					}
 				}
 				
-				if(!tile.tokens) {
-					tile.tokens = [];
-				}
-				tile.tokens[index] = curPlayer
+				// if(!tile.tokens) {
+				// 	tile.tokens = [];
+				// }
+				// tile.tokens[index] = curPlayer
 				let token = {tile : tile, index : index, player : player, type : place[2]}
+				if(curTokenType) {
+					token.type2 = curTokenType
+				}
 				tokens.push(token)
 				if(group) {
 					group.tokens.push(token)
 				}
 				if(!editMode) {
-					player.token--
+					if(token.type2) {
+						player.tokens[token.type2]--
+					} else {
+						player.token--
+					}
 					next()
 				}
-				return
+				curTile4Token = undefined
+				return true
 			}
 		}
 	}
@@ -532,16 +617,32 @@ function drawBackup() {
 
 			startX = backupStartX
 			startY = 1.1
-			ctx.globalAlpha = 0.5
-			draw(player.color, grid * startX, grid * startY, grid/4, grid/4)
-			ctx.globalAlpha = 1
-			startX += 0.3
-			for(let i = 0;i < player.token;i++) {
-				draw(player.color, grid * startX, grid * startY, grid/4, grid/4)
+			// ctx.globalAlpha = 0.5
+			// draw(player.color, grid * startX, grid * startY, grid/4, grid/4)
+			// ctx.globalAlpha = 1
+			// startX += 0.3
+			for(let i = 0;i < initialTokenNumber;i++) {
+				if(i < player.token) {
+					draw(player.color, grid * startX, grid * startY, grid/4, grid/4)
+				} else {
+					ctx.globalAlpha = 0.5
+					draw(player.color, grid * startX, grid * startY, grid/4, grid/4)
+					ctx.globalAlpha = 1
+				}
 				startX += 0.3
-				if(i == 2) {
+				if(i == 3) {
 					startX = backupStartX
 					startY += 0.3
+				}
+			}
+			initialTokenNumber
+			for(let tokenType = 1;tokenType < 4;tokenType++) {
+				if(player.tokens[tokenType] > 0) {
+					draw(player.color + tokenType, grid * (backupStartX-0.5 + 0.5 * tokenType), grid * 2, grid/3, grid/3)
+				} else if(player.tokens[tokenType] == 0) {
+					ctx.globalAlpha = 0.5
+					draw(player.color + tokenType, grid * (backupStartX-0.5 + 0.5 * tokenType), grid * 2, grid/3, grid/3)
+					ctx.globalAlpha = 1
 				}
 			}
 		}
@@ -566,13 +667,6 @@ let dragX = null, dragY, dragging = false
 function touchstart(ex, ey) {
 	let x = ex / grid
 	let y = ey / grid
-	
-	if(curTile4Token) {	// place token or cancel
-		placeToken(curTile4Token, ex, ey)
-		curTile4Token = undefined
-		drawAll()
-		return
-	}
 
 	if(editMode) {
 		// start dragging a new tile from list of tiles
@@ -591,27 +685,6 @@ function touchstart(ex, ey) {
 			curTile = {x : -1, y : -1, type : tileTypes[tileStack[0]], rotate : curRotate}
 			dragX = ex
 			dragY = ey
-			return
-		}
-	}
-	
-	let ox = x - offsetX / grid
-	let oy = y - offsetY / grid
-	for(let tile of tiles) {
-		if(ox >= tile.x && ox < tile.x + 1 &&
-			oy >= tile.y && oy < tile.y + 1) {
-
-			if(!editMode) {
-				if(!lastTile || lastTile != tile) {
-					break
-				}
-			} else {
-				// tiles.pop()
-				// drawAll()
-				// break;
-			}
-			curTile4Token = tile
-			drawTokenPlace(tile)
 			return
 		}
 	}
@@ -684,6 +757,7 @@ function touchend(ex, ey) {
 			if(curTile.x != -1) {
 				tiles.push(curTile)
 				scores.addTile(curTile)
+				curTokenType = 0
 				if(!editMode) {
 					tileStack.shift()
 					tilesLeft.innerHTML = tileStack.length
@@ -691,7 +765,6 @@ function touchend(ex, ey) {
 					btnNext.disabled = false
 					curTile4Token = curTile
 					drawAll()
-					drawTokenPlace(curTile)
 				} else {
 					saveGame()
 				}
@@ -706,9 +779,51 @@ function touchend(ex, ey) {
 		dragging = false
 		return
 	}
+	if(curTile4Token) {	// place token or cancel
+		if(placeToken(curTile4Token, ex, ey)) {
+			if(editMode) {
+				drawAll()
+			}
+			return
+		}
+		if(editMode) {
+			curTile4Token = false
+		}
+		drawAll()
+	}
+	// click on normal token or extra tokens
+	
+	if(ex > 8 * grid && ey > 1 * grid && ey < 2 * grid) {
+		curTokenType = 0
+		drawAll()
+		return
+	} else if(ex > 8 * grid && ey > 2 * grid && ey < 2.5 * grid) {
+		let player = players[curPlayer]
+		if(ex < 8.5 * grid) {
+			if(player.tokens[tokenLarge]) {
+				curTokenType = tokenLarge
+			}
+			drawAll()
+			return
+		} else if(ex < 9 * grid) {
+			if(player.tokens[tokenPig]) {
+				curTokenType = tokenPig
+			}
+			drawAll()
+			return
+		} else if(ex < 9.5 * grid) {
+			if(player.tokens[tokenBuilder]) {
+				curTokenType = tokenBuilder
+			}
+			drawAll()
+			return
+		}
+	}
 	if(tileStack.length > 0 && !lastTile && !editMode){
+		// click on the tile stack
 		if(ex > 8 * grid && ey < grid) {
 			rotateBackup()
+			return
 		}
 		let x = Math.floor((ex - offsetX) / grid)
 		let y = Math.floor((ey - offsetY) / grid)
@@ -722,6 +837,7 @@ function touchend(ex, ey) {
 
 				tiles.push(tile)
 				scores.addTile(tile)
+				curTokenType = 0
 				tileStack.shift()
 				tilesLeft.innerHTML = tileStack.length
 				lastTile = tile
@@ -729,11 +845,33 @@ function touchend(ex, ey) {
 				btnNext.disabled = false
 				curTile4Token = tile
 				drawAll()
+				return
+			}
+		}
+	}
+	if(!curTile4Token) {
+		let ox = (ex - offsetX) / grid
+		let oy = (ey - offsetY) / grid
+		for(let tile of tiles) {
+			if(ox >= tile.x && ox < tile.x + 1 &&
+				oy >= tile.y && oy < tile.y + 1) {
+	
+				if(!editMode) {
+					if(!lastTile || lastTile != tile) {
+						break
+					}
+				} else {
+					// tiles.pop()
+					// drawAll()
+					// break;
+				}
+				curTile4Token = tile
 				drawTokenPlace(tile)
 				return
 			}
 		}
 	}
+
 }
 
 function rotateBackup() {
@@ -749,10 +887,12 @@ function saveGame() {
 			id : gameId,
 			mode : gameMode,
 			beginTime : beginTime,
+			secondTile : secondTile,
 			players : players.map(item => {
 				let player = {
 					id : item.id,
-					score : item.score
+					score : item.score,
+					tokens : item.tokens
 				}
 				if(gameExps.trader) {
 					player.goods = item.goods
@@ -772,7 +912,8 @@ function saveGame() {
 					tile : item.tile.id,
 					index : item.index,
 					player : item.player.id,
-					type : item.type
+					type : item.type,
+					type2 : item.type2
 				}
 			}),
 			stack : tileStack,

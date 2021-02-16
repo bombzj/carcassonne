@@ -22,6 +22,12 @@ const goodsWine = 0
 const goodsGrain = 1
 const goodsCloth = 2
 
+const tokenLarge = 1
+const tokenPig = 2
+const tokenBuilder = 3
+
+const initialTokenNumber = 7
+
 const allColors = [
 	'blue', 'red', 'green', 'yellow', 'black', 'pink'
 ]
@@ -611,9 +617,9 @@ const tileTypes = [
 		connect : [road, city, road, city],
 		exp : expInn,
 		place: [
-			[0.2, 0.05, farm, [0], [1]],
+			[0.8, 0.05, farm, [0], [1]],
 			[0.5, 0.4, city, [1, 3], [], [starFlag]],
-			[0.8, 0.05, farm, [1], [1]],
+			[0.2, 0.05, farm, [1], [1]],
 			[0.2, 0.87, farm, [4], [1]],
 			[0.8, 0.87, farm, [5], [1]],
 			[0.5, 0.1, road, [0]],
@@ -854,9 +860,9 @@ const tileTypes = [
 		connect : [road, city, road, city],
 		exp : expTrader,
 		place: [
-			[0.2, 0.05, farm, [0], [1]],
+			[0.8, 0.05, farm, [0], [1]],
 			[0.5, 0.4, city, [1, 3], [], [starWine]],
-			[0.8, 0.05, farm, [1], [1]],
+			[0.2, 0.05, farm, [1], [1]],
 			[0.2, 0.87, farm, [4], [1]],
 			[0.8, 0.87, farm, [5], [1]],
 			[0.5, 0.1, road, [0]],

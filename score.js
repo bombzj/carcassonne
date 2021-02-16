@@ -137,6 +137,14 @@ var scores = {
                         group.cathedral = true
                     }
                 }
+                if(gameExps.trader && curPlayer >= 0) {
+                    // test the builder feature
+                    if(group.tokens.some(t => t.player.id == curPlayer && t.type2 == tokenBuilder)) {
+                        if(secondTile < 2) {
+                            secondTile = 1
+                        }
+                    }
+                }
             } else if(place[2] == farm) {
                 let group = undefined
                 for(let con of place[3]) {
@@ -189,7 +197,7 @@ var scores = {
                 if(tile.unfinished[token.index] == 0) {
                     token.player.score += 9
                     token.player.token++
-                    token.tile.tokens[token.index] = undefined
+                    // token.tile.tokens[token.index] = undefined
                     return false
                 }
                 return true
@@ -230,11 +238,20 @@ var scores = {
                 }
                 let tokenPlayers = []
                 for(let token2 of group.tokens) {
-                    token2.player.token++
-                    token2.tile.tokens[token2.index] = undefined
+                    // put back tokens
+                    if(token2.type2) {
+                        token2.player.tokens[token2.type2]++
+                    } else {
+                        token2.player.token++
+                    }
+                    // token2.tile.tokens[token2.index] = undefined
                     token2.done = true
                     tokenPlayers.push(token2.player)
+                    if(token2.type2 == tokenLarge) {    // a large meeple is twice as a normal one
+                        tokenPlayers.push(token2.player)
+                    }
                 }
+                // scoring
                 tokenPlayers = getTopNumber(tokenPlayers)
                 for(let player of tokenPlayers) {
                     player.score += addScore
@@ -364,16 +381,27 @@ var scores = {
                         }
                     }
                 }
-                addScore = citys.size * 4
+                addScore = citys.size
             }
             let tokenPlayers = []
             for(let token2 of group.tokens) {
                 token2.done = true
                 tokenPlayers.push(token2.player)
+                if(token2.type2 == tokenLarge) {    // a large meeple is twice as a normal one
+                    tokenPlayers.push(token2.player)
+                }
             }
             tokenPlayers = getTopNumber(tokenPlayers)
             for(let player of tokenPlayers) {
-                player.score2 += addScore
+                if(token.type == farm) {
+                    if(group.tokens.some(t => t.player == player && t.type2 == tokenPig)) {
+                        player.score2 += addScore * 4
+                    } else {
+                        player.score2 += addScore * 3
+                    }
+                } else {
+                    player.score2 += addScore
+                }
             }
         }
         if(gameExps.trader) {
