@@ -244,6 +244,10 @@ var scores = {
                     } else {
                         token2.player.token++
                     }
+                    // score 3 due to fairy
+                    if(fairyToken && fairyToken == token2) {
+                        fairyToken.player.score += 3
+                    }
                     // token2.tile.tokens[token2.index] = undefined
                     token2.done = true
                     tokenPlayers.push(token2.player)

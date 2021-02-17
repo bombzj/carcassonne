@@ -15,6 +15,7 @@ let secondTile		// builder feature, now it is the second tile, 1-got a chance 2-
 let isPortal		// the portal is now open
 let dragonTile		// which tile is dragon on
 let dragonMoves		// tiles of dragon's path, undefined if not started
+let fairyToken		// which token fairy is protecting
 
 function init() {
 	btnDelete.disabled = true
@@ -99,6 +100,7 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 	isPortal = false
 	dragonTile = undefined
 	dragonMoves = undefined
+	fairyToken = undefined
 
 	if(game) {
 		setMode(game.mode || 'base')
@@ -376,14 +378,6 @@ function next() {
 	isPortal = false
 	if(lastTile) {
 		scores.checkToken()
-		for(let i = 0;i < players.length;i++) {
-			document.getElementById("score" + i).innerHTML = players[i].score
-			if(gameExps.trader) {
-				for(let g = 0;g < 3;g++) {
-					tableScore.rows[i + 1].cells[3+g].innerHTML = players[i].goods[g]
-				}
-			}
-		}
 		lastTile = undefined
 		// next player, if builder, get an extra turn
 		if(secondTile == 1) {
@@ -391,6 +385,10 @@ function next() {
 		} else {
 			secondTile = 0
 			curPlayer = (curPlayer + 1) % players.length
+			// add one score due to fairy
+			if(fairyToken && fairyToken.player.id == curPlayer) {
+				fairyToken.player.score++
+			}
 		}
 		btnNext.disabled = true
 		let need = true
@@ -404,6 +402,14 @@ function next() {
 		}
 		drawAll()
 		saveGame()
+		for(let i = 0;i < players.length;i++) {
+			document.getElementById("score" + i).innerHTML = players[i].score
+			if(gameExps.trader) {
+				for(let g = 0;g < 3;g++) {
+					tableScore.rows[i + 1].cells[3+g].innerHTML = players[i].goods[g]
+				}
+			}
+		}
 	}
 	checkFinish()
 }
@@ -462,6 +468,12 @@ function drawAll() {
 	}
 	for(let tile of tiles) {
 		draw(tile.type.id, grid * tile.x + offsetX, grid * tile.y + offsetY, grid, grid, tile.rotate)
+	}
+	if(fairyToken) {
+		draw('fairy', 
+			grid * fairyToken.x + offsetX - grid/6 + grid/4, 
+			grid * fairyToken.y + offsetY - grid/6, 
+			grid/4, grid/3)
 	}
 	for(let token of tokens) {
 		if(token.type2) {
@@ -552,7 +564,7 @@ function testToken(playerId, group, tokenType, isLastTile) {
 const zoomTile = 2;
 // draw all token positions of this tile
 function drawTokenPlace(tile, ex = -1000, ey = -1000) {
-	if(curTokenType == tokenPrincess) {
+	if(curTokenType == tokenPrincess || curTokenType == tokenFairy) {
 		return
 	}
 	let x = grid * tile.x + offsetX - grid / 2
@@ -955,7 +967,9 @@ function touchend(ex, ey) {
 		// click on an existing token to place fairy
 		if(curTokenType == tokenFairy) {
 			if(token && token.player.id == curPlayer) {
-	
+				fairyToken = token
+				next()
+				return
 			}
 		}
 		// click on an existing token to kick
