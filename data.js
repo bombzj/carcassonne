@@ -720,7 +720,7 @@ const tileTypes = [
 		connect : [city, farm, road, city],
 		exp : expTrader,
 		place: [
-			[0.8, 0.2, city, [0,3], [], [starCloth]],
+			[0.7, 0.2, city, [0,3], [], [starCloth]],
 			[0.15, 0.6, farm, [2,3,4], [0]],
 			[0.75, 0.9, farm, [5], [0]],
 			[0.45, 0.7, road, [2]],

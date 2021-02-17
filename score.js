@@ -239,11 +239,7 @@ var scores = {
                 let tokenPlayers = []
                 for(let token2 of group.tokens) {
                     // put back tokens
-                    if(token2.type2) {
-                        token2.player.tokens[token2.type2]++
-                    } else {
-                        token2.player.token++
-                    }
+                    postRemoveTokenBase(token2)
                     // score 3 due to fairy
                     if(fairyToken && fairyToken == token2) {
                         fairyToken.player.score += 3

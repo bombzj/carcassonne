@@ -16,6 +16,7 @@ let isPortal		// the portal is now open
 let dragonTile		// which tile is dragon on
 let dragonMoves		// tiles of dragon's path, undefined if not started
 let fairyToken		// which token fairy is protecting
+let gameFinished
 
 function init() {
 	btnDelete.disabled = true
@@ -37,6 +38,8 @@ function init() {
 	files.push('dragon' + '.png')
 	files.push('princess' + '.png')
 	files.push('fairy' + '.png')
+	files.push('circle' + '.png')
+	files.push('circle2' + '.png')
 	loadImages(files, () => {
 		for(let c of allColors) {
 			images[c + tokenLarge] = images[c]
@@ -91,6 +94,7 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 	if(clear) {
 		game = undefined
 	}
+	stopBlinkToken()
 	scores.initScore()
 	lastTile = undefined
 	curTile4Token = undefined
@@ -101,6 +105,7 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 	dragonTile = undefined
 	dragonMoves = undefined
 	fairyToken = undefined
+	gameFinished = undefined
 
 	if(game) {
 		setMode(game.mode || 'base')
@@ -347,7 +352,8 @@ function newTile(x, y, tileId, rotate) {
 }
 
 function checkFinish() {
-	if(tileStack.length == 0) {
+	if(tileStack.length == 0 && !dragonMoves) {
+		gameFinished = true
 		scores.checkFinalToken()
 		for(let i = 0;i < players.length;i++) {
 			document.getElementById("scorep" + i).innerHTML = "+" .concat( players[i].score2)
@@ -375,6 +381,7 @@ function shuffle(arr) {
 
 function next() {
 	curTile4Token = undefined
+	stopBlinkToken()
 	isPortal = false
 	if(lastTile) {
 		scores.checkToken()
@@ -450,7 +457,7 @@ function empty() {
 
 function drawAll() {
 	ctx.clearRect(0,0,canvas.width,canvas.height); 
-	if(!lastTile && !editMode && !dragonMoves) {
+	if(!lastTile && !editMode && tileStack.length != 0 && !dragonMoves) {
 		ctx.fillStyle='#E0E0F0'
 		// draw all possible places of this rotate
 		for(let so of scores.solutions) {
@@ -682,14 +689,16 @@ function drawBackup() {
 			if(!lastTile) {
 				draw(tileStack[0], grid * startX, grid * startY, grid*0.8, grid*0.8, curRotate)
 			}
-			let player = players[curPlayer]
-
-			startX = backupStartX
-			startY = 1.1
 			// ctx.globalAlpha = 0.5
 			// draw(player.color, grid * startX, grid * startY, grid/4, grid/4)
 			// ctx.globalAlpha = 1
 			// startX += 0.3
+		}
+		// draw backup tokens
+		if(!gameFinished) {
+			let player = players[curPlayer]
+			startX = backupStartX
+			startY = 1.1
 			for(let i = 0;i < initialTokenNumber;i++) {
 				if(i < player.token) {
 					draw(player.color, grid * startX, grid * startY, grid/4, grid/4)
@@ -704,7 +713,6 @@ function drawBackup() {
 					startY += 0.3
 				}
 			}
-			initialTokenNumber
 			for(let tokenType = 1;tokenType < 4;tokenType++) {
 				if(player.tokens[tokenType] > 0) {
 					draw(player.color + tokenType, grid * (backupStartX-0.5 + 0.4 * tokenType), grid * 2, grid/3, grid/3)
@@ -719,6 +727,13 @@ function drawBackup() {
 				if(lastTile && lastTile.type.princess) {
 					draw('princess', grid * (backupStartX-0.5 + 0.4 * 5), grid * 2, grid/3, grid/3)
 				}
+			}
+			if(curTokenType > 0) {
+				ctx.beginPath();
+				ctx.lineWidth="2";
+				ctx.strokeStyle="gold";
+				ctx.rect(grid * (backupStartX-0.5 + 0.4 * curTokenType),grid * 2,grid/3,grid/3);
+				ctx.stroke();
 			}
 		}
 	}
@@ -821,9 +836,9 @@ function touchmove(ex, ey) {
 		return
 	}
 	// mouse over positions for token
-	if(curTile4Token) {
-		drawTokenPlace(curTile4Token, ex, ey)
-	}
+	// if(curTile4Token) {
+	// 	drawTokenPlace(curTile4Token, ex, ey)
+	// }
 }
 
 function placeTile(tile) {
@@ -845,6 +860,7 @@ function placeTile(tile) {
 	}
 	if(!isPortal && !tile.type.volcano) {
 		curTile4Token = tile
+		blinkTileToken(tile)
 	}
 }
 
@@ -877,30 +893,23 @@ function touchend(ex, ey) {
 		let y = Math.floor((ey - offsetY) / grid)
 		// click on a possible place
 		let tile = scores.board[x] && scores.board[x][y]
-		if(tile && dragonMoves.indexOf(tile) == -1) {
+		let fairyTile = fairyToken && fairyToken.tile
+		if(tile && dragonMoves.indexOf(tile) == -1 && tile != fairyTile) {
 			if(Math.abs(x- dragonTile.x) + Math.abs(y- dragonTile.y) == 1) {
 				dragonMoves.push(tile)
 				dragonTile = tile
 				// kick all tokens from this tile
-				tokens = tokens.filter(token => {
+				for(let token of tokens) {
 					if(token.tile == tile) {
-						if(token.type2) {
-							token.player.tokens[token.type2]++
-						} else {
-							token.player.token++
-						}
-						// remove it from group as well
-						let group = token.tile.groups[token.index]
-						if(group) {
-							group.tokens = group.tokens.filter(t => t != token)
-						}
-						return false
+						tokens = tokens.filter(t => t != token)
+						postRemoveToken(token)
 					}
-					return true
-				})
+				}
+				
 				// end of moves
-				if(dragonMoves.length > 6 || dragonDeadEnd()) {
+				if(dragonMoves.length > 6 || dragonDeadEnd(fairyTile)) {
 					dragonMoves = undefined
+					checkFinish()
 				}
 				drawAll()
 			}
@@ -920,53 +929,64 @@ function touchend(ex, ey) {
 		drawAll()
 	}
 	
-	// click on normal token or extra tokens
-	if(ex > 8 * grid && ey > 1 * grid && ey < 2 * grid) {
-		curTokenType = 0
-		drawAll()
-		return
-	} else if(ex > 8 * grid && ey > 2 * grid && ey < 2.5 * grid) {
-		let player = players[curPlayer]
-		if(ex < 8.4 * grid) {
-			if(player.tokens[tokenLarge]) {
-				curTokenType = tokenLarge
-			}
+	if(lastTile && !lastTile.type.volcano) {
+		// click on normal token or extra tokens
+		if(ex > 8 * grid && ey > 1 * grid && ey < 1.8 * grid) {
+			// stopBlinkToken()
+			curTokenType = 0
 			drawAll()
+			blinkTileToken(curTile4Token)
 			return
-		} else if(ex < 8.8 * grid) {
-			if(player.tokens[tokenPig]) {
-				curTokenType = tokenPig
+		} else if(ex > 7.9 * grid && ey > 1.9 * grid && ey < 2.5 * grid) {
+			let basex = 8.3
+			let addx = 0.4
+			let player = players[curPlayer]
+			if(ex < basex * grid) {
+				if(player.tokens[tokenLarge]) {
+					curTokenType = tokenLarge
+					drawAll()
+					blinkTileToken(curTile4Token)
+				}
+				return
+			} else if(ex < (basex + addx) * grid) {
+				if(player.tokens[tokenPig]) {
+					curTokenType = tokenPig
+					drawAll()
+					blinkTileToken(curTile4Token)
+				}
+				return
+			} else if(ex < (basex + addx * 2) * grid) {
+				if(player.tokens[tokenBuilder]) {
+					curTokenType = tokenBuilder
+					drawAll()
+					blinkTileToken(curTile4Token)
+				}
+				return
+			} else if(ex < (basex + addx * 3) * grid) {
+				if(gameExps.dragon) {
+					curTokenType = tokenFairy
+					drawAll()
+					blinkFairyToken(player)
+				}
+				return
+			} else if(ex < (basex + addx * 4) * grid) {
+				if(gameExps.dragon) {
+					curTokenType = tokenPrincess
+					drawAll()
+					blinkPrincessToken(player)
+				}
+				return
 			}
-			drawAll()
-			return
-		} else if(ex < 9.2 * grid) {
-			if(player.tokens[tokenBuilder]) {
-				curTokenType = tokenBuilder
-			}
-			drawAll()
-			return
-		} else if(ex < 9.6 * grid) {
-			if(gameExps.dragon) {
-				curTokenType = tokenFairy
-			}
-			drawAll()
-			return
-		} else if(ex < 10 * grid) {
-			if(gameExps.dragon) {
-				curTokenType = tokenPrincess
-			}
-			drawAll()
-			return
 		}
 	}
 
-	if(curTokenType == tokenFairy || curTokenType == tokenPrincess) {
+	if((curTokenType == tokenFairy || curTokenType == tokenPrincess) && lastTile) {
 		let x = (ex - offsetX) / grid
 		let y = (ey - offsetY) / grid
 		let token = tokenByXY(x, y)
 		// click on an existing token to place fairy
-		if(curTokenType == tokenFairy) {
-			if(token && token.player.id == curPlayer) {
+		if(curTokenType == tokenFairy && !lastTile.type.volcano) {
+			if(token && token.player.id == curPlayer && token.type2 != tokenPig && token2.type2 != tokenBuilder) {
 				fairyToken = token
 				next()
 				return
@@ -974,7 +994,7 @@ function touchend(ex, ey) {
 		}
 		// click on an existing token to kick
 		if(curTokenType == tokenPrincess) {
-			if(token && lastTile) {
+			if(token && lastTile && token.type2 != tokenBuilder) {
 				let pass = false
 				for(let [index, place] of lastTile.type.place.entries()) {
 					if(place.princess) {
@@ -984,22 +1004,8 @@ function touchend(ex, ey) {
 					}
 				}
 				if(pass) {
-					tokens = tokens.filter(t => {
-						if(t == token) {
-							if(token.type2) {
-								token.player.tokens[token.type2]++
-							} else {
-								token.player.token++
-							}
-							// remove it from group as well
-							let group = token.tile.groups[token.index]
-							if(group) {
-								group.tokens = group.tokens.filter(t => t != token)
-							}
-							return false
-						}
-						return true
-					})
+					tokens = tokens.filter(t => t != token)
+					postRemoveToken(token)
 					next()
 					return
 				}
@@ -1037,7 +1043,7 @@ function touchend(ex, ey) {
 				oy >= tile.y && oy < tile.y + 1) {
 	
 				if(!editMode && !isPortal) {
-					if(!lastTile || lastTile != tile || tile.type.volcano) {
+					if(!lastTile || lastTile != tile || lastTile.type.volcano) {
 						break
 					}
 				} else {
@@ -1054,6 +1060,36 @@ function touchend(ex, ey) {
 
 }
 
+// after removing token, give it back to player and remove pig or builder if needed
+function postRemoveToken(token) {
+	postRemoveTokenBase(token)
+	// remove it from group as well
+	let group = token.tile.groups[token.index]
+	if(group) {
+		group.tokens = group.tokens.filter(t => t != token)
+		// remove pig or builder
+		if(!group.tokens.some(t => t.player == token.player && t.type2 != tokenPig && t.type2 != tokenBuilder)) {
+			group.tokens = group.tokens.filter(t => {
+				if(t.player != token.player) {
+					return true
+				} else {
+					tokens = tokens.filter(t2 => t2 != t)
+					postRemoveTokenBase(t)
+					return false
+				}
+			})
+		}
+	}
+}
+// after removing token, give it back to player
+function postRemoveTokenBase(token) {
+	if(token.type2) {
+		token.player.tokens[token.type2]++
+	} else {
+		token.player.token++
+	}
+}
+
 let tokenDis = 0.1
 function tokenByXY(x, y) {
 	for(let token of tokens) {
@@ -1064,10 +1100,10 @@ function tokenByXY(x, y) {
 }
 
 // test if dragon is in a dead end
-function dragonDeadEnd() {
+function dragonDeadEnd(fairyTile) {
 	for(let dir of connectRect) {
 		let tile = scores.board[dir[0] + dragonTile.x][dir[1] + dragonTile.y]
-		if(tile && dragonMoves.indexOf(tile) == -1) {
+		if(tile && dragonMoves.indexOf(tile) == -1 && tile != fairyTile) {
 			return false
 		}
 	}
@@ -1181,3 +1217,66 @@ function sleep(ms) {
 	return new Promise(resolve => setTimeout(resolve, ms));
 }
 
+// draw blinking positions
+let blinkTokens
+let blinkTimer
+var circle2 = false
+function blinkToken() {
+	if(blinkTokens) {
+		circle2 = !circle2
+		for(let token of blinkTokens) {
+			draw(circle2 ? 'circle' : 'circle2', 
+				grid * token.x + offsetX - grid/12, 
+				grid * token.y + offsetY - grid/12, 
+				grid/6, grid/6)
+		}
+	}
+}
+function stopBlinkToken() {
+	blinkTokens = undefined
+	if(blinkTimer) {
+		clearInterval(blinkTimer)
+		blinkTimer = undefined
+	}
+}
+
+function blinkFairyToken() {
+	blinkTokens = tokens.filter(token => {
+		return token.player.id == curPlayer && token.type2 != tokenBuilder && token.type2 != tokenPig
+	})
+	if(!blinkTimer) {
+		blinkTimer = setInterval(blinkToken, 500)
+	}
+}
+function blinkPrincessToken() {
+	blinkTokens = []
+	for(let [index, place] of lastTile.type.place.entries()) {
+		if(place.princess) {
+			blinkTokens = blinkTokens.concat(lastTile.groups[index].tokens.filter(t => t.type2 != tokenBuilder))
+		}
+	}
+	if(!blinkTimer) {
+		blinkTimer = setInterval(blinkToken, 500)
+	}
+}
+// unfinished
+function blinkTileToken(tile) {
+	if(!tile || tile.type.volcano) {
+		return
+	}
+	blinkTokens = []
+
+	for(let [index, place] of tile.type.place.entries()) {
+		// don't draw if this position is invalid
+		let group = tile.groups[index]
+		if(!testToken(curPlayer, group, curTokenType, tile == lastTile)) {
+			continue
+		}
+		let placeR = rotate(place, tile.rotate)
+
+		blinkTokens.push({x: tile.x + placeR[0] * zoomTile - 0.5, y: tile.y + placeR[1] * zoomTile - 0.5})
+	}
+	if(!blinkTimer) {
+		blinkTimer = setInterval(blinkToken, 500)
+	}
+}
