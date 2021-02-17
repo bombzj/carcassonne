@@ -34,6 +34,7 @@ function init() {
 		files.push(c + tokenBuilder + '.png')
 	}
 	files.push('dragon' + '.png')
+	files.push('princess' + '.png')
 	files.push('fairy' + '.png')
 	loadImages(files, () => {
 		for(let c of allColors) {
@@ -144,12 +145,15 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 			}
 			let player = players[item.player]
 			let group = tile.groups[item.index]
+			let tokenPlace = rotate(tile.type.place[item.index], tile.rotate)
 			let token = {
 				tile : tile,
 				index : item.index,
 				player : player,
 				type : item.type,
 				type2 : item.type2,
+				x : tile.x + tokenPlace[0],
+				y : tile.y + tokenPlace[1],
 			}
 			tokens.push(token)
 			// if(!tile.tokens) {
@@ -438,7 +442,7 @@ function empty() {
 	}
 }
 
-function drawAll(c) {
+function drawAll() {
 	ctx.clearRect(0,0,canvas.width,canvas.height); 
 	if(!lastTile && !editMode && !dragonMoves) {
 		ctx.fillStyle='#E0E0F0'
@@ -460,18 +464,15 @@ function drawAll(c) {
 		draw(tile.type.id, grid * tile.x + offsetX, grid * tile.y + offsetY, grid, grid, tile.rotate)
 	}
 	for(let token of tokens) {
-		let tile = token.tile
-		let place = tile.type.place
-		let tokenPlace = rotate(place[token.index], tile.rotate)
 		if(token.type2) {
 			draw(token.player.color + token.type2, 
-				grid * (tile.x + tokenPlace[0]) + offsetX - grid/4, 
-				grid * (tile.y + tokenPlace[1]) + offsetY - grid/4, 
+				grid * token.x + offsetX - grid/4, 
+				grid * token.y + offsetY - grid/4, 
 				grid/2, grid/2)
 		} else {
 			draw(token.player.color, 
-				grid * (tile.x + tokenPlace[0]) + offsetX - grid/6, 
-				grid * (tile.y + tokenPlace[1]) + offsetY - grid/6, 
+				grid * token.x + offsetX - grid/6, 
+				grid * token.y + offsetY - grid/6, 
 				grid/3, grid/3)
 		}
 	}
@@ -506,6 +507,9 @@ function rotate(arr, r) {
 
 // test if the place can put the token
 function testToken(playerId, group, tokenType, isLastTile) {
+	if(tokenType == tokenFairy) {
+		return false
+	}
 	if(group) {
 		if(tokenType > 1) {
 			if(!editMode && !isLastTile) {
@@ -548,6 +552,9 @@ function testToken(playerId, group, tokenType, isLastTile) {
 const zoomTile = 2;
 // draw all token positions of this tile
 function drawTokenPlace(tile, ex = -1000, ey = -1000) {
+	if(curTokenType == tokenPrincess) {
+		return
+	}
 	let x = grid * tile.x + offsetX - grid / 2
 	let y = grid * tile.y + offsetY - grid / 2
 	draw(tile.type.id, x, y, grid * zoomTile, grid * zoomTile, tile.rotate)
@@ -615,7 +622,11 @@ function placeToken(tile, ex, ey) {
 				// 	tile.tokens = [];
 				// }
 				// tile.tokens[index] = curPlayer
-				let token = {tile : tile, index : index, player : player, type : place[2]}
+				let token = {
+					tile : tile, index : index, player : player, type : place[2],
+					x : tile.x + placeR[0],
+					y : tile.y + placeR[1],
+				}
 				if(curTokenType) {
 					token.type2 = curTokenType
 				}
@@ -684,11 +695,17 @@ function drawBackup() {
 			initialTokenNumber
 			for(let tokenType = 1;tokenType < 4;tokenType++) {
 				if(player.tokens[tokenType] > 0) {
-					draw(player.color + tokenType, grid * (backupStartX-0.5 + 0.5 * tokenType), grid * 2, grid/3, grid/3)
+					draw(player.color + tokenType, grid * (backupStartX-0.5 + 0.4 * tokenType), grid * 2, grid/3, grid/3)
 				} else if(player.tokens[tokenType] == 0) {
 					ctx.globalAlpha = 0.5
-					draw(player.color + tokenType, grid * (backupStartX-0.5 + 0.5 * tokenType), grid * 2, grid/3, grid/3)
+					draw(player.color + tokenType, grid * (backupStartX-0.5 + 0.4 * tokenType), grid * 2, grid/3, grid/3)
 					ctx.globalAlpha = 1
+				}
+			}
+			if(gameExps.dragon) {
+				draw('fairy', grid * (backupStartX-0.5 + 0.4 * 4), grid * 2, grid/3, grid/3)
+				if(lastTile && lastTile.type.princess) {
+					draw('princess', grid * (backupStartX-0.5 + 0.4 * 5), grid * 2, grid/3, grid/3)
 				}
 			}
 		}
@@ -890,34 +907,92 @@ function touchend(ex, ey) {
 		}
 		drawAll()
 	}
-	// click on normal token or extra tokens
 	
+	// click on normal token or extra tokens
 	if(ex > 8 * grid && ey > 1 * grid && ey < 2 * grid) {
 		curTokenType = 0
 		drawAll()
 		return
 	} else if(ex > 8 * grid && ey > 2 * grid && ey < 2.5 * grid) {
 		let player = players[curPlayer]
-		if(ex < 8.5 * grid) {
+		if(ex < 8.4 * grid) {
 			if(player.tokens[tokenLarge]) {
 				curTokenType = tokenLarge
 			}
 			drawAll()
 			return
-		} else if(ex < 9 * grid) {
+		} else if(ex < 8.8 * grid) {
 			if(player.tokens[tokenPig]) {
 				curTokenType = tokenPig
 			}
 			drawAll()
 			return
-		} else if(ex < 9.5 * grid) {
+		} else if(ex < 9.2 * grid) {
 			if(player.tokens[tokenBuilder]) {
 				curTokenType = tokenBuilder
 			}
 			drawAll()
 			return
+		} else if(ex < 9.6 * grid) {
+			if(gameExps.dragon) {
+				curTokenType = tokenFairy
+			}
+			drawAll()
+			return
+		} else if(ex < 10 * grid) {
+			if(gameExps.dragon) {
+				curTokenType = tokenPrincess
+			}
+			drawAll()
+			return
 		}
 	}
+
+	if(curTokenType == tokenFairy || curTokenType == tokenPrincess) {
+		let x = (ex - offsetX) / grid
+		let y = (ey - offsetY) / grid
+		let token = tokenByXY(x, y)
+		// click on an existing token to place fairy
+		if(curTokenType == tokenFairy) {
+			if(token && token.player.id == curPlayer) {
+	
+			}
+		}
+		// click on an existing token to kick
+		if(curTokenType == tokenPrincess) {
+			if(token && lastTile) {
+				let pass = false
+				for(let [index, place] of lastTile.type.place.entries()) {
+					if(place.princess) {
+						if(lastTile.groups[index].tokens.indexOf(token) != -1) {
+							pass = true
+						}
+					}
+				}
+				if(pass) {
+					tokens = tokens.filter(t => {
+						if(t == token) {
+							if(token.type2) {
+								token.player.tokens[token.type2]++
+							} else {
+								token.player.token++
+							}
+							// remove it from group as well
+							let group = token.tile.groups[token.index]
+							if(group) {
+								group.tokens = group.tokens.filter(t => t != token)
+							}
+							return false
+						}
+						return true
+					})
+					next()
+					return
+				}
+			}
+		}
+	}
+
 	if(tileStack.length > 0 && !lastTile && !editMode){
 		// click on the tile stack
 		if(ex > 8 * grid && ey < grid) {
@@ -939,6 +1014,7 @@ function touchend(ex, ey) {
 			}
 		}
 	}
+	// click on a tile to place token
 	if(!curTile4Token) {
 		let ox = (ex - offsetX) / grid
 		let oy = (ey - offsetY) / grid
@@ -962,6 +1038,15 @@ function touchend(ex, ey) {
 		}
 	}
 
+}
+
+let tokenDis = 0.1
+function tokenByXY(x, y) {
+	for(let token of tokens) {
+		if((token.x - x)**2 + (token.y - y)**2 < tokenDis) {
+			return token
+		}
+	}
 }
 
 // test if dragon is in a dead end

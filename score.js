@@ -447,6 +447,8 @@ var scores = {
                             place.inn = true
                         } else if(star == starCathedral) {
                             place.cathedral = true
+                        } else if(star == starPrincess) {
+                            place.princess = true
                         } else if(star == starWine) {
                             place.wine = true
                         } else if(star == starGrain) {

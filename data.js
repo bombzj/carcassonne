@@ -30,6 +30,8 @@ const goodsCloth = 2
 const tokenLarge = 1
 const tokenPig = 2
 const tokenBuilder = 3
+const tokenFairy = 4
+const tokenPrincess = 5
 
 const initialTokenNumber = 7
 
@@ -964,6 +966,7 @@ const tileTypes = [
 		count:	1,
 		exp : expDragon,
 		template: 19,
+		princess: true,
 		connect : [city, city, farm, city],
 		place: [
 			[0.5, 0.3, city, [0, 1, 3], [], [starPrincess]],
@@ -974,6 +977,7 @@ const tileTypes = [
 		count:	1,
 		exp : expDragon,
 		template: 17,
+		princess: true,
 		connect : [road, road, city, road],
 		place: [
 			[0.15, 0.15, farm, [1,2]],
@@ -989,6 +993,7 @@ const tileTypes = [
 		count:	1,
 		exp : expDragon,
 		template: 44,
+		princess: true,
 		connect : [city, city, farm, farm],
 		place: [
 			[0.2, 0.3, city, [0, 1], [], [starPrincess]],
@@ -998,6 +1003,7 @@ const tileTypes = [
 	{	// (90)			
 		count:	1,
 		exp : expDragon,
+		princess: true,
 		connect : [city, city, farm, farm],
 		place: [
 			[0.5, 0.87, farm, [4,5], [1]],
@@ -1009,6 +1015,7 @@ const tileTypes = [
 		count:	1,
 		exp : expDragon,
 		template: 10,
+		princess: true,
 		connect : [road, city, city, road],
 		place: [
 			[0.85, 0.15, farm, [0,7]],
@@ -1020,6 +1027,7 @@ const tileTypes = [
 	{	// (92)			
 		count:	1,
 		exp : expDragon,
+		princess: true,
 		connect : [city, farm, city, city],
 		place: [
 			[0.5, 0.2, city, [0], [], [starPrincess]],
