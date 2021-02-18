@@ -104,8 +104,9 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 	isPortal = false
 	dragonTile = undefined
 	dragonMoves = undefined
-	fairyToken = undefined
+	fairyToken = undefined 
 	gameFinished = undefined
+	curTokenType = tokenNormal
 
 	if(game) {
 		setMode(game.mode || 'base')
@@ -387,6 +388,7 @@ function shuffle(arr) {
 }
 
 function next() {
+	curTokenType = tokenNormal
 	curTile4Token = undefined
 	stopBlinkToken()
 	blinkDragonMove()
@@ -481,8 +483,17 @@ function drawAll() {
 			}
 		}
 	}
+	// draw all tiles on the board
 	for(let tile of tiles) {
 		draw(tile.type.id, grid * tile.x + offsetX, grid * tile.y + offsetY, grid, grid, tile.rotate)
+	}
+	// highlight last tile just placed
+	if(lastTile) {
+		ctx.beginPath();
+		ctx.lineWidth="3";
+		ctx.strokeStyle="gold";
+		ctx.rect(grid * lastTile.x + offsetX, grid * lastTile.y + offsetY,grid,grid);
+		ctx.stroke();
 	}
 	if(fairyToken) {
 		draw('fairy', 
@@ -490,6 +501,7 @@ function drawAll() {
 			grid * fairyToken.y + offsetY - grid/6, 
 			grid/4, grid/3)
 	}
+	// draw all tokens on the board
 	for(let token of tokens) {
 		if(token.type2) {
 			draw(token.player.color + token.type2, 
@@ -533,21 +545,27 @@ function rotate(arr, r) {
 }
 
 // test if the place can put the token
-function testToken(playerId, group, tokenType, isLastTile) {
+function testToken(group, tokenType, tile) {
 	if(tokenType == tokenFairy) {
 		return false
 	}
+	if(tokenType == tokenNormal) {
+		if(players[curPlayer].token <= 0) {
+			return false
+		}
+	}
+	let isLastTile = (tile == lastTile)
 	if(group) {
 		if(tokenType > 1) {
 			if(!editMode && !isLastTile) {
 				return false
 			}
 			if(tokenType == tokenPig) {
-				if(group.type != farm || !group.tokens.some(t => t.player.id == playerId)) {
+				if(group.type != farm || !group.tokens.some(t => t.player.id == curPlayer)) {
 					return false
 				}
 			} else if(tokenType == tokenBuilder) {
-				if(group.type != city && group.type != road || !group.tokens.some(t => t.player.id == playerId)) {
+				if(group.type != city && group.type != road || !group.tokens.some(t => t.player.id == curPlayer)) {
 					return false
 				}
 			}
@@ -589,7 +607,7 @@ function drawTokenPlace(tile, ex = -1000, ey = -1000) {
 		for(let [index, place] of tile.type.place.entries()) {
 			// don't draw if this position is invalid
 			let group = tile.groups[index]
-			if(!testToken(curPlayer, group, curTokenType, tile == lastTile)) {
+			if(!testToken(group, curTokenType, tile)) {
 				continue
 			}
 			let placeR = rotate(place, tile.rotate)
@@ -641,7 +659,7 @@ function placeToken(tile, ex, ey) {
 					Math.abs(ey - py) < grid / 4) {
 
 				let group = tile.groups[index]
-				if(!testToken(curPlayer, group, curTokenType, tile == lastTile)) {
+				if(!testToken(group, curTokenType, tile)) {
 					continue
 				}
 				
@@ -852,19 +870,20 @@ function touchmove(ex, ey) {
 function placeTile(tile) {
 	tiles.push(tile)
 	scores.addTile(tile)
-	curTokenType = 0
 	tileStack.shift()
 	tilesLeft.innerHTML = tileStack.length
 	lastTile = tile
 	btnNext.disabled = false
-	if(tile.type.portal) {
-		isPortal = true
-	}
-	if(tile.type.volcano) {
-		dragonTile = tile
-	}
-	if(tile.type.dragon && dragonTile) {
-		dragonMoves = [dragonTile]
+	if(gameExps.dragon) {
+		if(tile.type.portal) {
+			isPortal = true
+		}
+		if(tile.type.volcano) {
+			dragonTile = tile
+		}
+		if(tile.type.dragon && dragonTile) {
+			dragonMoves = [dragonTile]
+		}
 	}
 	if(!isPortal && !tile.type.volcano) {
 		curTile4Token = tile
@@ -895,8 +914,8 @@ function touchend(ex, ey) {
 		dragging = false
 		return
 	}
+	// time to move the dragon!! 6 times and no same tiles
 	if(!lastTile && dragonMoves) {
-		// time to move the dragon!! 6 times and no same tiles
 		let x = Math.floor((ex - offsetX) / grid)
 		let y = Math.floor((ey - offsetY) / grid)
 		// click on a possible place
@@ -917,6 +936,7 @@ function touchend(ex, ey) {
 				// end of moves
 				if(dragonMoves.length > 6 || dragonDeadEnd(fairyTile)) {
 					dragonMoves = undefined
+					saveGame()
 					checkFinish()
 					stopBlinkToken()
 				} else {
@@ -936,6 +956,7 @@ function touchend(ex, ey) {
 		}
 		if(editMode || isPortal) {
 			curTile4Token = false
+			stopBlinkToken()
 			drawAll()
 		}
 	}
@@ -944,7 +965,7 @@ function touchend(ex, ey) {
 		// click on normal token or extra tokens
 		if(ex > 8 * grid && ey > 1 * grid && ey < 1.8 * grid) {
 			// stopBlinkToken()
-			curTokenType = 0
+			curTokenType = tokenNormal
 			drawAll()
 			blinkTileToken(curTile4Token)
 			return
@@ -1058,12 +1079,13 @@ function touchend(ex, ey) {
 						break
 					}
 				} else {
-					// tiles.pop()
-					// drawAll()
-					// break;
+					if(tile == dragonTile) {
+						break
+					}
 				}
 				curTile4Token = tile
 				drawTokenPlace(tile)
+				blinkTileToken(tile)
 				return
 			}
 		}
@@ -1280,7 +1302,7 @@ function blinkPrincessToken() {
 }
 // unfinished
 function blinkTileToken(tile) {
-	if(!tile || tile.type.volcano) {
+	if(!tile || lastTile && lastTile.type.volcano) {
 		return
 	}
 	blinkTokens = []
@@ -1288,7 +1310,7 @@ function blinkTileToken(tile) {
 	for(let [index, place] of tile.type.place.entries()) {
 		// don't draw if this position is invalid
 		let group = tile.groups[index]
-		if(!testToken(curPlayer, group, curTokenType, tile == lastTile)) {
+		if(!testToken(group, curTokenType, tile)) {
 			continue
 		}
 		let placeR = rotate(place, tile.rotate)

@@ -27,6 +27,7 @@ const goodsWine = 0
 const goodsGrain = 1
 const goodsCloth = 2
 
+const tokenNormal = 0
 const tokenLarge = 1
 const tokenPig = 2
 const tokenBuilder = 3
@@ -54,6 +55,7 @@ const tileTypes = [
 		riverEnd : true,
 		connect : [farm, river, farm, farm],
 		exp : expRiver,
+		volcano : true,
 		place: [
 			[0.2, 0.2, farm, [1,2,3,4,5,6,7,0]],
 		]
@@ -184,7 +186,7 @@ const tileTypes = [
 		connect : [farm, river, farm, farm],
 		exp : expRiver,
 		place: [
-			[0, 0, farm, [1,2,3,4,5,6,7,0]]
+			[0.8, 0.2, farm, [1,2,3,4,5,6,7,0]]
 		]
 	},
 	{	// (15)			
