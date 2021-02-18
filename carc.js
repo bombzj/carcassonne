@@ -163,6 +163,9 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 				y : tile.y + tokenPlace[1],
 			}
 			tokens.push(token)
+			if(item.fairy) {
+				fairyToken = token
+			}
 			// if(!tile.tokens) {
 			// 	tile.tokens = []
 			// }
@@ -179,6 +182,10 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 		}
 		if(game.dragonTile) {
 			dragonTile = tiles[game.dragonTile]
+			if(game.dragonMoves) {
+				dragonMoves = [dragonTile]
+				blinkDragonMove()
+			}
 		}
 		tileStack = game.stack
 		curPlayer = game.curPlayer
@@ -382,6 +389,7 @@ function shuffle(arr) {
 function next() {
 	curTile4Token = undefined
 	stopBlinkToken()
+	blinkDragonMove()
 	isPortal = false
 	if(lastTile) {
 		scores.checkToken()
@@ -910,6 +918,9 @@ function touchend(ex, ey) {
 				if(dragonMoves.length > 6 || dragonDeadEnd(fairyTile)) {
 					dragonMoves = undefined
 					checkFinish()
+					stopBlinkToken()
+				} else {
+					blinkDragonMove(fairyTile)
 				}
 				drawAll()
 			}
@@ -925,8 +936,8 @@ function touchend(ex, ey) {
 		}
 		if(editMode || isPortal) {
 			curTile4Token = false
+			drawAll()
 		}
-		drawAll()
 	}
 	
 	if(lastTile && !lastTile.type.volcano) {
@@ -986,7 +997,7 @@ function touchend(ex, ey) {
 		let token = tokenByXY(x, y)
 		// click on an existing token to place fairy
 		if(curTokenType == tokenFairy && !lastTile.type.volcano) {
-			if(token && token.player.id == curPlayer && token.type2 != tokenPig && token2.type2 != tokenBuilder) {
+			if(token && token.player.id == curPlayer && token.type2 != tokenPig && token.type2 != tokenBuilder) {
 				fairyToken = token
 				next()
 				return
@@ -1143,19 +1154,26 @@ function saveGame() {
 				}
 			}),
 			tokens : tokens.map(item => {
-				return {
+				let token = {
 					tile : item.tile.id,
 					index : item.index,
 					player : item.player.id,
 					type : item.type,
 					type2 : item.type2
 				}
+				if(item == fairyToken) {
+					token.fairy = true
+				}
+				return token
 			}),
 			stack : tileStack,
 			curPlayer : curPlayer
 		}
 		if(dragonTile) {
 			game.dragonTile = dragonTile.id
+			if(dragonMoves) {
+				game.dragonMoves = true
+			}
 		}
 		localStorage.setItem("game"+gameId, JSON.stringify(game));
 		games[gameId] = game
@@ -1225,10 +1243,11 @@ function blinkToken() {
 	if(blinkTokens) {
 		circle2 = !circle2
 		for(let token of blinkTokens) {
+			let zoom = token.zoom || 1
 			draw(circle2 ? 'circle' : 'circle2', 
-				grid * token.x + offsetX - grid/12, 
-				grid * token.y + offsetY - grid/12, 
-				grid/6, grid/6)
+				grid * token.x + offsetX - grid/12*zoom, 
+				grid * token.y + offsetY - grid/12*zoom, 
+				grid/6*zoom, grid/6*zoom)
 		}
 	}
 }
@@ -1274,7 +1293,22 @@ function blinkTileToken(tile) {
 		}
 		let placeR = rotate(place, tile.rotate)
 
-		blinkTokens.push({x: tile.x + placeR[0] * zoomTile - 0.5, y: tile.y + placeR[1] * zoomTile - 0.5})
+		blinkTokens.push({x: tile.x + placeR[0] * zoomTile - 0.5, y: tile.y + placeR[1] * zoomTile - 0.5, zoom:2})
+	}
+	if(!blinkTimer) {
+		blinkTimer = setInterval(blinkToken, 500)
+	}
+}
+function blinkDragonMove(fairyTile) {
+	if(!dragonMoves) {
+		return
+	}
+	blinkTokens = []
+	for(let dir of connectRect) {
+		let tile = scores.board[dir[0] + dragonTile.x][dir[1] + dragonTile.y]
+		if(tile && dragonMoves.indexOf(tile) == -1 && tile != fairyTile) {
+			blinkTokens.push({x: tile.x + 0.5, y: tile.y + 0.5, zoom:2})
+		}
 	}
 	if(!blinkTimer) {
 		blinkTimer = setInterval(blinkToken, 500)
