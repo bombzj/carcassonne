@@ -21,7 +21,6 @@ let gameFinished
 function init() {
 	btnDelete.disabled = true
 	scores.initTileType()
-	ctx = canvas.getContext("2d")
 	let files = []
 	for(let [index, item] of tileTypes.entries()) {
 		files.push(index + '.png')
@@ -436,10 +435,10 @@ function edit() {
 	editMode = !editMode;
 	if(editMode) {
 		drawAll()
-		btnDelete.disabled = false
+		tdDelete.style.display = ''
 	} else {
 		drawAll()
-		btnDelete.disabled = true
+		tdDelete.style.display = 'none'
 	}
 }
 
@@ -694,13 +693,16 @@ function placeToken(tile, ex, ey) {
 	}
 }
 
-const backupStartX = 8
+let backupStartX = 8		// left of all editmode tiles
+let editTileStartX = 8		// left of next tile and tokens
 function drawBackup() {
+	backupStartX = (canvas.width - 170) / grid
+	editTileStartX = (canvas.width - 500) / grid
 	let startX = backupStartX
 	let startY = 0
 	let w = 0.5
 	if(editMode) {
-		startX = backupStartX - 1.5
+		startX = editTileStartX
 		for(let [index, tileType] of tileTypes.entries()) {
 			draw(index, grid * startX, grid * startY, grid*w, grid*w, curRotate)
 			tileType.position = [startX, startY, w, w];	// TODO: should be one time job
@@ -711,6 +713,10 @@ function drawBackup() {
 			}
 		}
 	} else {
+		ctx.globalAlpha = 0.6
+		ctx.fillStyle = "white"
+		ctx.fillRect(backupStartX * grid - 30, 0, 200, 210)
+		ctx.globalAlpha = 1
 		if(tileStack.length > 0) {
 			if(!lastTile) {
 				draw(tileStack[0], grid * startX, grid * startY, grid*0.8, grid*0.8, curRotate)
@@ -805,19 +811,19 @@ function touchstart(ex, ey) {
 		}
 	}
 
-	if(ex < 850 && ey < 850) {
-		dragX = ex - offsetX
-		dragY = ey - offsetY
-	}
+	dragX = ex - offsetX
+	dragY = ey - offsetY
 }
 
 function touchmove(ex, ey) {
 	if(curTile) {
-		if(dragX != null && !dragging) {
-			let dx = ex - dragX
-			let dy = ey - dragY
-			if(dx**2 + dy**2 >= 100) {
-				dragging = true
+		if(!dragonMoves) {
+			if(dragX != null && !dragging) {
+				let dx = ex - dragX
+				let dy = ey - dragY
+				if(dx**2 + dy**2 >= 100) {
+					dragging = true
+				}
 			}
 		}
 		if(dragging) {
@@ -963,14 +969,14 @@ function touchend(ex, ey) {
 	
 	if(lastTile && !lastTile.type.volcano) {
 		// click on normal token or extra tokens
-		if(ex > 8 * grid && ey > 1 * grid && ey < 1.8 * grid) {
+		if(ex > backupStartX * grid && ey > 1 * grid && ey < 1.8 * grid) {
 			// stopBlinkToken()
 			curTokenType = tokenNormal
 			drawAll()
 			blinkTileToken(curTile4Token)
 			return
-		} else if(ex > 7.9 * grid && ey > 1.9 * grid && ey < 2.5 * grid) {
-			let basex = 8.3
+		} else if(ex > (backupStartX-0.1) * grid && ey > 1.9 * grid && ey < 2.5 * grid) {
+			let basex = backupStartX + 0.3
 			let addx = 0.4
 			let player = players[curPlayer]
 			if(ex < basex * grid) {
@@ -1047,7 +1053,7 @@ function touchend(ex, ey) {
 
 	if(tileStack.length > 0 && !lastTile && !editMode){
 		// click on the tile stack
-		if(ex > 8 * grid && ey < grid) {
+		if(ex > backupStartX * grid && ey < grid) {
 			rotateBackup()
 			return
 		}
@@ -1065,6 +1071,9 @@ function touchend(ex, ey) {
 				return
 			}
 		}
+	}
+	if(ex > editTileStartX * grid && editMode) {
+		rotateBackup()
 	}
 	// click on a tile to place token
 	if(!curTile4Token) {

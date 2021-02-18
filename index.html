@@ -19,13 +19,12 @@
     body,html {
         -webkit-user-select: none;
         user-select: none;
-        position: fixed;
     }
     td {
-        padding-top:5px;
+        padding-top:1px;
     }
     button {
-        padding:5px;
+        padding:3px;
     }
     .score, .score span{
         font-size: 24px;
@@ -60,24 +59,15 @@
     }
 </style>
 </head>
-<body>
-    <canvas id="canvas" width="800" height="720" style="margin:0px;float:left"></canvas>
-    <table id="tbl">
+<body style="margin:0px;">
+    <canvas id="canvas" width="800" height="720" style="margin:0px;position:absolute;border:0px;z-index:-1"></canvas>
+    <table id="tbl" style="float:right;margin-top:210px;width:200px;background-color: rgba(255,255,255,0.5);">
         <tr><td>
-            <button id="btnNext" onclick="javascript:next()" disabled="true">next</button><br/>
+            <button id="btnNext" onclick="javascript:next()" disabled="true">next</button> x<span id="tilesLeft"></span>
         </td></tr>
-        <tr><td class="score">
-            stack <span id="tilesLeft"></span><br/>
-        </td></tr>
-        <tr><td>
-            <button onclick="javascript:restartOption()">restart</button>
-        </td></tr>
-        <tr><td>
-            <button onclick="javascript:edit()">edit</button><br/>
-        </td></tr>
-        <tr><td>
+        <!-- <tr><td>
             <button onclick="javascript:rotateBackup()">rotate</button><br/>
-        </td></tr>
+        </td></tr> -->
         <tr><td class="score">
             <table id="tableScore" border="1" style="border-collapse: collapse" cellpadding="0px">
                 <tr>
@@ -139,17 +129,23 @@
             </table>
         </td></tr>
         <tr><td>
+            <button onclick="javascript:restartOption()">restart</button>
+        </td></tr>
+        <tr><td>
             <button id="btnPreviousGame" onclick="javascript:switchGame(-1)">&lt;&lt;</button>
             <button id="btnNextGame" onclick="javascript:switchGame(1)">&gt;&gt;</button>
         </td></tr>
         <tr><td>
+            <button onclick="javascript:edit()">edit</button> <button class="btn" onclick="javascript:copy()">copy</button>
+        </td></tr>
+        <tr id="tdDelete" style="display:none"><td>
             <button id="btnDelete" onclick="javascript:deleteTile()">delete</button>
         </td></tr>
         <tr><td>
-            <button class="btn" onclick="javascript:copy()">copy</button>
+            
         </td></tr>
     </table>
-    <div id="dialogMode" title="Choose Mode" class="dialog">
+    <div id="dialogMode" title="Choose Mode" class="dialog" style="display:none">
         <label>Base<input type="checkbox" id="c1" name="gmode" value="base" checked="checked"></label>
         
         <label>Inns and Cathedrals<input type="checkbox" id="c2" name="gmode" value="inn"></label>
@@ -220,6 +216,7 @@ $(function() {
         $( "#dialogMode" ).dialog("open");
     }
 
+    initCanvas()
     init()
 
     function restartGame(num) {
@@ -239,6 +236,16 @@ $(function() {
                 return gameJson
             }
         });
+    }
+
+    window.onresize = function() {
+        initCanvas()
+        drawAll()
+    }
+    function initCanvas() {
+        canvas.width = window.innerWidth
+        canvas.height = window.innerHeight
+        ctx = canvas.getContext("2d")
     }
 </script>
 </html>
