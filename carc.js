@@ -1130,6 +1130,9 @@ function postRemoveTokenBase(token) {
 	} else {
 		token.player.token++
 	}
+	if(fairyToken == token) {
+		fairyToken = undefined
+	}
 }
 
 let tokenDis = 0.1
