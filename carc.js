@@ -1009,9 +1009,11 @@ function touchend(ex, ey) {
 				return
 			} else if(ex < (basex + addx * 4) * grid) {
 				if(gameExps.dragon) {
-					curTokenType = tokenPrincess
-					drawAll()
-					blinkPrincessToken(player)
+					if(lastTile.type.place.some(t => t.princess)) {
+						curTokenType = tokenPrincess
+						drawAll()
+						blinkPrincessToken(player)
+					}
 				}
 				return
 			}
