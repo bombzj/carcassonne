@@ -3,6 +3,7 @@ const road = 1
 const city = 2
 const river = 3
 const cloister = 4
+const placeName = ['field', 'road', 'city', 'river', 'monastery']
 
 const starFlag = 1		// flag on a city
 const starInn = 2		// inn on a road
@@ -33,6 +34,7 @@ const tokenPig = 2
 const tokenBuilder = 3
 const tokenFairy = 4
 const tokenPrincess = 5
+const tokenName = ['meeple']
 
 const initialTokenNumber = 7
 

@@ -189,6 +189,9 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 		}
 		tileStack = game.stack
 		curPlayer = game.curPlayer
+		if(game.history) {
+			labelHistory.innerHTML = game.history
+		}
 	} else {
 		setMode(mode)
 		beginTime = new Date().toISOString()
@@ -303,6 +306,8 @@ function restart(playerNumber = 2, clear = false, mode = 'base') {
 		shuffle(rivers)
 		shuffle(others)
 		tileStack = tileStack.concat(beforeRiver, rivers, afterRiver, others)
+
+		labelHistory.innerHTML = ''
 		
 		offsetX = -grid * (boardWidth / 2 - 2)
 		offsetY = -grid * (boardWidth / 2 - 3)
@@ -404,6 +409,7 @@ function next() {
 			// add one score due to fairy
 			if(fairyToken && fairyToken.player.id == curPlayer) {
 				fairyToken.player.score++
+				addLog(fairyToken.player.color + ' gets 1 bonus point from the fairy')
 			}
 		}
 		btnNext.disabled = true
@@ -678,6 +684,7 @@ function placeToken(tile, ex, ey) {
 				if(group) {
 					group.tokens.push(token)
 				}
+				addLog(player.color + ' places a ' + tokenName[curTokenType] + ' on the ' + placeName[token.type])
 				if(!editMode) {
 					if(token.type2) {
 						player.tokens[token.type2]--
@@ -886,8 +893,10 @@ function placeTile(tile) {
 		}
 		if(tile.type.volcano) {
 			dragonTile = tile
+			addLog('A volcano erupts and beckons the dragon')
 		}
 		if(tile.type.dragon && dragonTile) {
+			addLog('A dragon walk begins')
 			dragonMoves = [dragonTile]
 		}
 	}
@@ -895,6 +904,7 @@ function placeTile(tile) {
 		curTile4Token = tile
 		blinkTileToken(tile)
 	}
+	addLog(players[curPlayer].color + ' places a tile')
 }
 
 function touchend(ex, ey) {
@@ -928,7 +938,9 @@ function touchend(ex, ey) {
 		let tile = scores.board[x] && scores.board[x][y]
 		let fairyTile = fairyToken && fairyToken.tile
 		if(tile && dragonMoves.indexOf(tile) == -1 && tile != fairyTile) {
-			if(Math.abs(x- dragonTile.x) + Math.abs(y- dragonTile.y) == 1) {
+			let dn = dirName(x- dragonTile.x, y- dragonTile.y)
+			if(dn) {
+				addLog(players[curPlayer].color + ' moves the dragon ' + dn)
 				dragonMoves.push(tile)
 				dragonTile = tile
 				// kick all tokens from this tile
@@ -1026,8 +1038,9 @@ function touchend(ex, ey) {
 		let token = tokenByXY(x, y)
 		// click on an existing token to place fairy
 		if(curTokenType == tokenFairy && !lastTile.type.volcano) {
-			if(token && token.player.id == curPlayer && token.type2 != tokenPig && token.type2 != tokenBuilder) {
+			if(token && token.player.id == curPlayer && token.type2 != tokenPig && token.type2 != tokenBuilder && fairyToken != token) {
 				fairyToken = token
+				addLog(players[curPlayer].color + ' moves the fairy')
 				next()
 				return
 			}
@@ -1297,7 +1310,7 @@ function stopBlinkToken() {
 
 function blinkFairyToken() {
 	blinkTokens = tokens.filter(token => {
-		return token.player.id == curPlayer && token.type2 != tokenBuilder && token.type2 != tokenPig
+		return token.player.id == curPlayer && token.type2 != tokenBuilder && token.type2 != tokenPig && fairyToken != token
 	})
 	if(!blinkTimer) {
 		blinkTimer = setInterval(blinkToken, 500)
@@ -1348,5 +1361,35 @@ function blinkDragonMove(fairyTile) {
 	}
 	if(!blinkTimer) {
 		blinkTimer = setInterval(blinkToken, 500)
+	}
+}
+
+function addLog(log, color) {
+	let str = ''
+	if(color) {
+		str += '<font color="' + color + '">'
+	}
+	str += log + "<br>"
+	
+	if(color) {
+		str += '</font>'
+	}
+	labelHistory.innerHTML += str
+	labelHistory.scrollTop = labelHistory.scrollHeight
+}
+
+function dirName(dx, dy) {
+	if(dx == 0) {
+		if(dy == 1) {
+			return 'south'
+		} else if(dy == -1) {
+			return 'north'
+		}
+	} else if(dy == 0) {
+		if(dx == 1) {
+			return 'east'
+		} else if(dx == -1) {
+			return 'west'
+		}
 	}
 }

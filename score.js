@@ -255,6 +255,8 @@ var scores = {
                 tokenPlayers = getTopNumber(tokenPlayers)
                 for(let player of tokenPlayers) {
                     player.score += addScore
+                    addLog(player.color + ' completes a ' + placeName[token.type])
+                    addLog(player.color + ' scores ' + addScore + ' score(s)')
                 }
             }
             return !finished
